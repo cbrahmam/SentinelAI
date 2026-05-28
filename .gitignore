@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+venv/
+.venv/
+env/
+
+# Database
+*.db
+*.sqlite3
+backend/data/metrics/*
+backend/data/logs/*
+!backend/data/metrics/.gitkeep
+!backend/data/logs/.gitkeep
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Node
+node_modules/
+frontend/dist/
+frontend/node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Sample data (large files)
+sample-data/*.db
+
+# Screenshots
+screenshots/
