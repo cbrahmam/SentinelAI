@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Query
 from backend.services.log_store import query_logs, search_logs, get_log_counts
+from backend.services.log_anomaly_detector import detect_log_anomalies
 
 router = APIRouter()
 
@@ -32,3 +33,9 @@ async def log_counts(
 ):
     counts = get_log_counts(service, start_time, end_time, bucket_minutes)
     return {"data": counts}
+
+
+@router.get("/anomalies")
+async def log_anomalies(service: str | None = None, lookback_minutes: int = 30):
+    report = detect_log_anomalies(service, lookback_minutes)
+    return report.model_dump()

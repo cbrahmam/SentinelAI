@@ -2,7 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.config import CORS_ORIGINS
 from backend.database import init_db
-from backend.routers import ingest, metrics, logs, services as services_router, stream, alerts, incidents
+from backend.routers import ingest, metrics, logs, services as services_router, stream, alerts, incidents, thresholds, anomalies
+from backend.services.monitor import start_monitor, stop_monitor
 
 app = FastAPI(
     title="SentinelAI",
@@ -22,6 +23,12 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup():
     init_db()
+    await start_monitor()
+
+
+@app.on_event("shutdown")
+async def shutdown():
+    await stop_monitor()
 
 
 @app.get("/api/health")
@@ -36,3 +43,5 @@ app.include_router(services_router.router, prefix="/api/services", tags=["Servic
 app.include_router(stream.router, prefix="/api/stream", tags=["Streaming"])
 app.include_router(alerts.router, prefix="/api/alerts", tags=["Alerts"])
 app.include_router(incidents.router, prefix="/api/incidents", tags=["Incidents"])
+app.include_router(thresholds.router, prefix="/api/thresholds", tags=["Thresholds"])
+app.include_router(anomalies.router, prefix="/api/anomalies", tags=["Anomalies"])

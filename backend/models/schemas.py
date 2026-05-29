@@ -86,3 +86,53 @@ class SimulatorStatus(BaseModel):
     metrics_generated: int = 0
     logs_generated: int = 0
     active_anomalies: list[str] = []
+
+
+class AnomalyPoint(BaseModel):
+    timestamp: str
+    value: float
+    expected_value: float
+    deviation: float
+    severity: str
+    detection_method: str
+    metric_name: str
+    service: str
+    host: Optional[str] = None
+
+
+class AnomalyReport(BaseModel):
+    service: str
+    metric_name: str
+    anomalies: list[AnomalyPoint]
+    baseline_mean: float
+    baseline_std: float
+    detection_method: str
+    time_range: str
+
+
+class LogAnomaly(BaseModel):
+    anomaly_type: str
+    service: str
+    message_pattern: str
+    count: int
+    first_seen: str
+    last_seen: str
+    severity: str
+    sample_logs: list[str] = []
+
+
+class LogAnomalyReport(BaseModel):
+    service: str
+    anomalies: list[LogAnomaly]
+    lookback_minutes: int
+    total_logs_analyzed: int
+
+
+class ThresholdConfig(BaseModel):
+    id: Optional[str] = None
+    service: str = "*"
+    metric_name: str
+    warning_value: float
+    critical_value: float
+    comparison: str = "above"
+    enabled: bool = True
