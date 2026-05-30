@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from backend.services.anomaly_detector import run_full_detection
 from backend.services.log_anomaly_detector import detect_log_anomalies
 from backend.services.metric_store import get_services
+from backend.services.alert_engine import create_alert, auto_resolve_check
 from backend.models.schemas import AnomalyReport, LogAnomalyReport
 from backend.config import DETECTION_INTERVAL_SECONDS
 
@@ -112,11 +113,21 @@ async def _run_detection_cycle():
                 "detected_at": datetime.now(timezone.utc).isoformat(),
                 "is_new": is_new,
             })
+            if should_alert:
+                try:
+                    create_alert(report, alert_type="anomaly")
+                except Exception as e:
+                    print(f"Alert creation error: {e}")
 
     if len(_history) > 1000:
         _history[:] = _history[-500:]
 
     anomaly_state.clear_resolved()
+
+    try:
+        auto_resolve_check()
+    except Exception as e:
+        print(f"Auto-resolve error: {e}")
 
     services = await asyncio.get_event_loop().run_in_executor(None, get_services)
     log_reports = []
