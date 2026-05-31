@@ -6,6 +6,10 @@ from backend.services.anomaly_detector import run_full_detection
 from backend.services.log_anomaly_detector import detect_log_anomalies
 from backend.services.metric_store import get_services
 from backend.services.alert_engine import create_alert, auto_resolve_check
+from backend.services.correlator import run_correlation
+from backend.services.incident_manager import (
+    create_incident_from_correlation, get_active_incident_for_services, link_alert_to_incident,
+)
 from backend.models.schemas import AnomalyReport, LogAnomalyReport
 from backend.config import DETECTION_INTERVAL_SECONDS
 
@@ -115,7 +119,14 @@ async def _run_detection_cycle():
             })
             if should_alert:
                 try:
-                    create_alert(report, alert_type="anomaly")
+                    alert_result = create_alert(report, alert_type="anomaly")
+                    if alert_result.get("id"):
+                        active_inc = get_active_incident_for_services([report.service])
+                        if active_inc:
+                            try:
+                                link_alert_to_incident(active_inc["id"], alert_result["id"])
+                            except Exception:
+                                pass
                 except Exception as e:
                     print(f"Alert creation error: {e}")
 
@@ -128,6 +139,16 @@ async def _run_detection_cycle():
         auto_resolve_check()
     except Exception as e:
         print(f"Auto-resolve error: {e}")
+
+    try:
+        correlations = run_correlation(reports)
+        for corr in correlations:
+            all_services = [corr.origin_service] + corr.affected_services
+            existing = get_active_incident_for_services(all_services)
+            if not existing:
+                create_incident_from_correlation(corr)
+    except Exception as e:
+        print(f"Correlation/incident error: {e}")
 
     services = await asyncio.get_event_loop().run_in_executor(None, get_services)
     log_reports = []

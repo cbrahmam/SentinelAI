@@ -14,6 +14,11 @@ const useStore = create((set, get) => ({
   logsPaused: false,
   logFilter: { service: '', level: '' },
 
+  incidents: [],
+  incidentCount: 0,
+  currentIncident: null,
+  correlations: [],
+
   setTimeRange: (tr) => set({ timeRange: tr }),
   setLogsPaused: (p) => set({ logsPaused: p }),
   setLogFilter: (f) => set((s) => ({ logFilter: { ...s.logFilter, ...f } })),
@@ -106,8 +111,77 @@ const useStore = create((set, get) => ({
     }))
   },
 
-  appendMetric: (metric) => {
-    // Metrics are handled by individual chart components
+  appendMetric: (metric) => {},
+
+  fetchIncidents: async (status, severity) => {
+    try {
+      const q = new URLSearchParams()
+      if (status) q.set('status', status)
+      if (severity) q.set('severity', severity)
+      const res = await fetch(`${API}/incidents?${q}`)
+      const data = await res.json()
+      set({ incidents: data.incidents || [], incidentCount: data.count || 0 })
+    } catch (e) {
+      console.error('Incidents fetch error:', e)
+    }
+  },
+
+  fetchIncident: async (id) => {
+    try {
+      const res = await fetch(`${API}/incidents/${id}`)
+      const data = await res.json()
+      set({ currentIncident: data })
+      return data
+    } catch (e) {
+      console.error('Incident fetch error:', e)
+      return null
+    }
+  },
+
+  createIncident: async (title, severity, affectedServices, description) => {
+    const res = await fetch(`${API}/incidents`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, severity, affected_services: affectedServices, description }),
+    })
+    const data = await res.json()
+    get().fetchIncidents()
+    return data
+  },
+
+  updateIncidentStatus: async (id, status) => {
+    await fetch(`${API}/incidents/${id}/status`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    })
+    get().fetchIncident(id)
+  },
+
+  resolveIncident: async (id, resolution) => {
+    await fetch(`${API}/incidents/${id}/resolve`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ resolution }),
+    })
+    get().fetchIncident(id)
+  },
+
+  analyzeIncident: async (id) => {
+    const res = await fetch(`${API}/incidents/${id}/analyze`, { method: 'POST' })
+    const data = await res.json()
+    get().fetchIncident(id)
+    return data
+  },
+
+  fetchCorrelations: async () => {
+    try {
+      const res = await fetch(`${API}/correlations`)
+      const data = await res.json()
+      set({ correlations: data.correlations || [] })
+    } catch (e) {
+      console.error('Correlations fetch error:', e)
+    }
   },
 }))
 

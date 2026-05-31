@@ -136,3 +136,55 @@ class ThresholdConfig(BaseModel):
     critical_value: float
     comparison: str = "above"
     enabled: bool = True
+
+
+class CorrelationGroup(BaseModel):
+    id: str
+    origin_service: str
+    origin_anomaly: AnomalyPoint
+    affected_services: list[str]
+    propagation_path: list[str]
+    time_span_seconds: int
+    total_anomalies: int
+    detected_at: str
+    ai_analysis: Optional[dict] = None
+
+
+class TraceSpan(BaseModel):
+    service: str
+    timestamp: str
+    level: str
+    message: str
+    duration_ms: Optional[float] = None
+    span_id: Optional[str] = None
+
+
+class TraceView(BaseModel):
+    trace_id: str
+    spans: list[TraceSpan]
+    total_duration_ms: float
+    error_service: Optional[str] = None
+    root_cause_log: Optional[str] = None
+
+
+class TimelineEvent(BaseModel):
+    timestamp: str
+    event_type: str
+    description: str
+    service: Optional[str] = None
+    metadata: Optional[dict] = None
+
+
+class IncidentCreate(BaseModel):
+    title: str
+    severity: str = "P3"
+    affected_services: list[str] = []
+    description: Optional[str] = None
+
+
+class IncidentStatusUpdate(BaseModel):
+    status: str
+
+
+class IncidentResolve(BaseModel):
+    resolution: str

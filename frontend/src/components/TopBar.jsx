@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Activity, AlertTriangle, Play, Square, Zap } from 'lucide-react'
+import { Link, useLocation } from 'react-router-dom'
+import { Activity, AlertTriangle, Play, Square, Zap, AlertOctagon } from 'lucide-react'
 import useStore from '../stores/useStore'
 
 const TIME_RANGES = ['15m', '1h', '6h', '24h', '7d']
@@ -22,6 +23,7 @@ export default function TopBar() {
     systemStatus, firingAlertCount, timeRange, setTimeRange,
     simulatorStatus, startSimulator, stopSimulator, injectAnomaly, loadSampleData,
   } = useStore()
+  const location = useLocation()
 
   const [showInject, setShowInject] = useState(false)
   const [anomalyType, setAnomalyType] = useState('cpu_spike')
@@ -48,6 +50,24 @@ export default function TopBar() {
             <span className={`w-2 h-2 rounded-full ${isHealthy ? 'bg-emerald-400' : 'bg-red-400 animate-pulse-dot'}`} />
             {systemStatus}
           </div>
+          <nav className="flex items-center gap-1 ml-2">
+            <Link
+              to="/"
+              className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                location.pathname === '/' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-200'
+              }`}
+            >
+              Dashboard
+            </Link>
+            <Link
+              to="/incidents"
+              className={`flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                location.pathname.startsWith('/incidents') ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-200'
+              }`}
+            >
+              <AlertOctagon className="w-3 h-3" /> Incidents
+            </Link>
+          </nav>
         </div>
 
         <div className="flex items-center gap-3">
