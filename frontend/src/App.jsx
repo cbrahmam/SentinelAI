@@ -8,6 +8,12 @@ import MetricsCharts from './components/MetricsCharts'
 import LogFeed from './components/LogFeed'
 import IncidentList from './components/IncidentList'
 import IncidentDetail from './components/IncidentDetail'
+import ServiceMap from './components/ServiceMap'
+import ServiceDetail from './components/ServiceDetail'
+import LogExplorer from './components/LogExplorer'
+import MetricsExplorer from './components/MetricsExplorer'
+import TraceDetail from './components/TraceDetail'
+import AIChatPanel from './components/AIChatPanel'
 
 function Dashboard() {
   return (
@@ -22,20 +28,8 @@ function Dashboard() {
   )
 }
 
-function IncidentsPage() {
-  return (
-    <div className="px-4 lg:px-6 py-6">
-      <IncidentList />
-    </div>
-  )
-}
-
-function IncidentDetailPage() {
-  return (
-    <div className="px-4 lg:px-6 py-6">
-      <IncidentDetail />
-    </div>
-  )
+function Page({ children }) {
+  return <div className="px-4 lg:px-6 py-6">{children}</div>
 }
 
 function AppContent() {
@@ -75,10 +69,16 @@ function AppContent() {
       <TopBar />
       <Routes>
         <Route path="/" element={<Dashboard />} />
-        <Route path="/incidents" element={<IncidentsPage />} />
-        <Route path="/incidents/:id" element={<IncidentDetailPage />} />
+        <Route path="/map" element={<Page><ServiceMap /></Page>} />
+        <Route path="/services/:name" element={<Page><ServiceDetail /></Page>} />
+        <Route path="/incidents" element={<Page><IncidentList /></Page>} />
+        <Route path="/incidents/:id" element={<Page><IncidentDetail /></Page>} />
+        <Route path="/logs" element={<Page><LogExplorer /></Page>} />
+        <Route path="/metrics" element={<Page><MetricsExplorer /></Page>} />
+        <Route path="/traces/:traceId" element={<Page><TraceDetail /></Page>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <AIChatPanel />
     </div>
   )
 }

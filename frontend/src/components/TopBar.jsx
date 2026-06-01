@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Activity, AlertTriangle, Play, Square, Zap, AlertOctagon } from 'lucide-react'
+import { Activity, AlertTriangle, Play, Square, Zap, AlertOctagon, Network, ScrollText, BarChart3 } from 'lucide-react'
 import useStore from '../stores/useStore'
 
 const TIME_RANGES = ['15m', '1h', '6h', '24h', '7d']
@@ -51,21 +51,20 @@ export default function TopBar() {
             {systemStatus}
           </div>
           <nav className="flex items-center gap-1 ml-2">
-            <Link
-              to="/"
-              className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-                location.pathname === '/' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-200'
-              }`}
-            >
+            <Link to="/" className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${location.pathname === '/' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-200'}`}>
               Dashboard
             </Link>
-            <Link
-              to="/incidents"
-              className={`flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium transition-colors ${
-                location.pathname.startsWith('/incidents') ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-200'
-              }`}
-            >
+            <Link to="/map" className={`flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium transition-colors ${location.pathname === '/map' || location.pathname.startsWith('/services/') ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-200'}`}>
+              <Network className="w-3 h-3" /> Map
+            </Link>
+            <Link to="/incidents" className={`flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium transition-colors ${location.pathname.startsWith('/incidents') ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-200'}`}>
               <AlertOctagon className="w-3 h-3" /> Incidents
+            </Link>
+            <Link to="/logs" className={`flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium transition-colors ${location.pathname === '/logs' || location.pathname.startsWith('/traces/') ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-200'}`}>
+              <ScrollText className="w-3 h-3" /> Logs
+            </Link>
+            <Link to="/metrics" className={`flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium transition-colors ${location.pathname === '/metrics' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-200'}`}>
+              <BarChart3 className="w-3 h-3" /> Metrics
             </Link>
           </nav>
         </div>
