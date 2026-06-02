@@ -13,6 +13,9 @@ import ServiceDetail from './components/ServiceDetail'
 import LogExplorer from './components/LogExplorer'
 import MetricsExplorer from './components/MetricsExplorer'
 import TraceDetail from './components/TraceDetail'
+import ChaosPanel from './components/ChaosPanel'
+import RunbookLibrary from './components/RunbookLibrary'
+import ReportGenerator from './components/ReportGenerator'
 import AIChatPanel from './components/AIChatPanel'
 
 function Dashboard() {
@@ -76,6 +79,9 @@ function AppContent() {
         <Route path="/logs" element={<Page><LogExplorer /></Page>} />
         <Route path="/metrics" element={<Page><MetricsExplorer /></Page>} />
         <Route path="/traces/:traceId" element={<Page><TraceDetail /></Page>} />
+        <Route path="/chaos" element={<Page><ChaosPanel /></Page>} />
+        <Route path="/runbooks" element={<Page><RunbookLibrary /></Page>} />
+        <Route path="/report" element={<Page><ReportGenerator /></Page>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <AIChatPanel />
