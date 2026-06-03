@@ -39,3 +39,12 @@ body {
 .log-warn { color: #F59E0B; }
 .log-error { color: #EF4444; }
 .log-fatal { color: #FCA5A5; font-weight: bold; }
+
+@keyframes slide-in {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.animate-slide-in {
+  animation: slide-in 0.3s ease-out;
+}

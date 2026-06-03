@@ -26,7 +26,12 @@ SentinelAI continuously monitors metrics and logs across your entire infrastruct
 - **Chaos scenarios** — Pre-built incident simulations (DB exhaustion, memory leak, cascade failure)
 - **Runbook library** — Curated incident response guides with commands and escalation paths
 - **Report generation** — One-click infrastructure summary in Markdown
-- **Real-time streaming** — Server-Sent Events for live metrics, logs, and alerts
+- **SLO & Error Budgets** — Per-service uptime tracking, error budget bars, configurable windows (1h–30d)
+- **Anomaly overlays** — Red shaded regions and dots on metric charts during detected anomalies
+- **Toast notifications** — Real-time popups for new alerts and incidents
+- **Saved dashboards** — Persist custom metric explorer configurations to SQLite
+- **Docker Compose** — One-command setup with nginx reverse proxy
+- **Real-time streaming** — Server-Sent Events for live metrics, logs, and alerts with auto-reconnect
 - **Built-in simulator** — 8 microservices with realistic metrics, logs, and anomaly injection
 
 ## Architecture
@@ -132,6 +137,14 @@ npm run dev
 ```
 
 Open http://localhost:5173 in your browser.
+
+### Docker (one-command)
+
+```bash
+docker compose up --build
+```
+
+Open http://localhost:5173. Backend runs on port 8000, frontend on 5173 via nginx.
 
 ### Quick Demo
 

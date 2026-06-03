@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Activity, AlertTriangle, Play, Square, Zap, AlertOctagon, Network, ScrollText, BarChart3, Flame, BookOpen, FileText } from 'lucide-react'
+import { Activity, AlertTriangle, Play, Square, Zap, AlertOctagon, Network, ScrollText, BarChart3, Flame, BookOpen, FileText, Shield } from 'lucide-react'
 import useStore from '../stores/useStore'
 
 const TIME_RANGES = ['15m', '1h', '6h', '24h', '7d']
@@ -65,6 +65,9 @@ export default function TopBar() {
             </Link>
             <Link to="/metrics" className={`flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium transition-colors ${location.pathname === '/metrics' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-200'}`}>
               <BarChart3 className="w-3 h-3" /> Metrics
+            </Link>
+            <Link to="/slo" className={`flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium transition-colors ${location.pathname === '/slo' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-200'}`}>
+              <Shield className="w-3 h-3" /> SLO
             </Link>
             <Link to="/chaos" className={`flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium transition-colors ${location.pathname === '/chaos' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-200'}`}>
               <Flame className="w-3 h-3" /> Chaos

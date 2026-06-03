@@ -110,6 +110,15 @@ def init_db():
                 postmortem TEXT
             );
             CREATE INDEX IF NOT EXISTS idx_incidents_status ON incidents(status);
+
+            CREATE TABLE IF NOT EXISTS saved_dashboards (
+                id TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                description TEXT,
+                config TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            );
         """)
         _seed_default_thresholds(conn)
 

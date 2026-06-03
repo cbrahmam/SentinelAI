@@ -1,0 +1,26 @@
+services:
+  backend:
+    build:
+      context: .
+      target: backend
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - SIMULATOR_ENABLED=true
+      - DETECTION_INTERVAL_SECONDS=60
+    volumes:
+      - sentinel-data:/app/backend/data
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+volumes:
+  sentinel-data:

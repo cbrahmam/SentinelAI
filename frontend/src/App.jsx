@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import useStore from './stores/useStore'
 import TopBar from './components/TopBar'
@@ -16,7 +16,9 @@ import TraceDetail from './components/TraceDetail'
 import ChaosPanel from './components/ChaosPanel'
 import RunbookLibrary from './components/RunbookLibrary'
 import ReportGenerator from './components/ReportGenerator'
+import SLODashboard from './components/SLODashboard'
 import AIChatPanel from './components/AIChatPanel'
+import ToastContainer, { toast } from './components/ToastContainer'
 
 function Dashboard() {
   return (
@@ -39,6 +41,8 @@ function AppContent() {
   const fetchDashboard = useStore((s) => s.fetchDashboard)
   const fetchSimulatorStatus = useStore((s) => s.fetchSimulatorStatus)
   const appendLog = useStore((s) => s.appendLog)
+  const prevAlertCount = useRef(0)
+  const prevIncidentCount = useRef(0)
 
   useEffect(() => {
     fetchDashboard()
@@ -46,30 +50,59 @@ function AppContent() {
     const interval = setInterval(() => {
       fetchDashboard()
       fetchSimulatorStatus()
+
+      const state = useStore.getState()
+      if (state.firingAlertCount > prevAlertCount.current && prevAlertCount.current >= 0) {
+        const diff = state.firingAlertCount - prevAlertCount.current
+        if (diff > 0 && prevAlertCount.current > 0) {
+          toast('alert', `${diff} new alert${diff > 1 ? 's' : ''} firing`, state.alerts?.[0]?.title || '')
+        }
+      }
+      prevAlertCount.current = state.firingAlertCount
+
+      fetch('/api/incidents?limit=1').then(r => r.json()).then(d => {
+        const count = d.count || 0
+        if (count > prevIncidentCount.current && prevIncidentCount.current > 0) {
+          toast('incident', 'New incident created', d.incidents?.[0]?.title || '')
+        }
+        prevIncidentCount.current = count
+      }).catch(() => {})
+
     }, 10000)
     return () => clearInterval(interval)
   }, [fetchDashboard, fetchSimulatorStatus])
 
   useEffect(() => {
-    const es = new EventSource('/api/stream/all')
-    es.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data)
-        if (data.type === 'log') {
-          appendLog(data)
-        }
-      } catch {}
+    let es = null
+    let reconnectTimeout = null
+
+    const connect = () => {
+      es = new EventSource('/api/stream/all')
+      es.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data)
+          if (data.type === 'log') {
+            appendLog(data)
+          }
+        } catch {}
+      }
+      es.onerror = () => {
+        es.close()
+        reconnectTimeout = setTimeout(connect, 5000)
+      }
     }
-    es.onerror = () => {
-      es.close()
-      setTimeout(() => {}, 5000)
+
+    connect()
+    return () => {
+      es?.close()
+      clearTimeout(reconnectTimeout)
     }
-    return () => es.close()
   }, [appendLog])
 
   return (
     <div className="min-h-screen bg-[#0B0F19]">
       <TopBar />
+      <ToastContainer />
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/map" element={<Page><ServiceMap /></Page>} />
@@ -82,6 +115,7 @@ function AppContent() {
         <Route path="/chaos" element={<Page><ChaosPanel /></Page>} />
         <Route path="/runbooks" element={<Page><RunbookLibrary /></Page>} />
         <Route path="/report" element={<Page><ReportGenerator /></Page>} />
+        <Route path="/slo" element={<Page><SLODashboard /></Page>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <AIChatPanel />
