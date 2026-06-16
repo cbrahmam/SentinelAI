@@ -31,6 +31,11 @@ SentinelAI continuously monitors metrics and logs across your entire infrastruct
 - **Toast notifications** — Real-time popups for new alerts and incidents
 - **Saved dashboards** — Persist custom metric explorer configurations to SQLite
 - **Docker Compose** — One-command setup with nginx reverse proxy
+- **Deployment markers** — Record deploys and overlay them as vertical lines on metric charts for change correlation
+- **Predictive alerting** — Linear regression forecasting with countdown timers for predicted threshold breaches
+- **Custom alert rules** — User-defined alert policies with 6 condition operators, severity levels, and toggle controls
+- **On-call schedules** — Rotation management (weekly/daily), escalation chains, override support
+- **Dashboard builder** — Composable widget grid with 8 widget types, per-widget config, save/load layouts
 - **Real-time streaming** — Server-Sent Events for live metrics, logs, and alerts with auto-reconnect
 - **Built-in simulator** — 8 microservices with realistic metrics, logs, and anomaly injection
 
@@ -207,6 +212,17 @@ api-gateway ──▶ auth-service ──▶ postgres-primary
 | `/api/chaos/runbooks` | GET | List runbooks |
 | `/api/chaos/report` | GET | Generate infrastructure report |
 | `/api/stream/all` | GET (SSE) | Real-time event stream |
+| `/api/deploys` | GET/POST | List or record deploy events |
+| `/api/deploys/chart/{service}` | GET | Deploy markers for chart overlay |
+| `/api/predictions` | GET | Predicted threshold breaches |
+| `/api/rules` | GET/POST | List or create alert rules |
+| `/api/rules/{id}/toggle` | PUT | Enable/disable an alert rule |
+| `/api/rules/evaluate` | GET | Evaluate all rules against current metrics |
+| `/api/oncall` | GET/POST | List or create on-call schedules |
+| `/api/oncall/current` | GET | Who's currently on-call |
+| `/api/oncall/{id}/escalation` | GET | Escalation chain for a schedule |
+| `/api/layouts` | GET/POST | List or create dashboard layouts |
+| `/api/layouts/widget-types` | GET | Available widget types for builder |
 
 ## Project Structure
 
@@ -234,7 +250,12 @@ SentinelAI/
 │   │   ├── service_mapper.py      # Service dependency map data
 │   │   ├── chaos_scenarios.py     # Pre-built chaos scenarios
 │   │   ├── runbook_library.py     # Curated runbook collection
-│   │   └── report_generator.py    # Infrastructure report generation
+│   │   ├── report_generator.py    # Infrastructure report generation
+│   │   ├── deploy_tracker.py      # Deploy event recording & queries
+│   │   ├── predictor.py           # Linear regression forecasting
+│   │   ├── alert_rules.py         # Custom alert rule engine
+│   │   ├── oncall_manager.py      # On-call rotation & escalation
+│   │   └── dashboard_builder.py   # Dashboard layout persistence
 │   ├── generators/
 │   │   └── simulator.py           # 8-service data simulator
 │   └── routers/                   # FastAPI route handlers
@@ -258,7 +279,12 @@ SentinelAI/
 │   │       ├── ChaosPanel.jsx     # Chaos scenario controls
 │   │       ├── RunbookLibrary.jsx # Runbook browser
 │   │       ├── ReportGenerator.jsx# Infrastructure reports
-│   │       └── AIChatPanel.jsx    # AI assistant chat
+│   │       ├── AIChatPanel.jsx    # AI assistant chat
+│   │       ├── DeployMarkers.jsx  # Deploy timeline & recording
+│   │       ├── PredictiveAlerts.jsx# Prediction countdown cards
+│   │       ├── AlertRules.jsx     # Alert rule builder
+│   │       ├── OnCallSchedule.jsx # On-call management
+│   │       └── DashboardBuilder.jsx# Widget-based dashboard builder
 │   └── vite.config.js             # Vite + proxy config
 ├── .env.example
 └── README.md
