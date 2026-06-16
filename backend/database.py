@@ -119,6 +119,67 @@ def init_db():
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL
             );
+
+            CREATE TABLE IF NOT EXISTS deploy_events (
+                id TEXT PRIMARY KEY,
+                service TEXT NOT NULL,
+                version TEXT NOT NULL,
+                environment TEXT DEFAULT 'production',
+                deployer TEXT DEFAULT 'system',
+                description TEXT,
+                commit_sha TEXT,
+                status TEXT DEFAULT 'success',
+                timestamp TEXT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_deploy_service_time ON deploy_events(service, timestamp);
+
+            CREATE TABLE IF NOT EXISTS alert_rules (
+                id TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                service TEXT NOT NULL,
+                metric_name TEXT NOT NULL,
+                condition TEXT NOT NULL,
+                threshold REAL NOT NULL,
+                severity TEXT DEFAULT 'warning',
+                duration_seconds INTEGER DEFAULT 0,
+                enabled INTEGER DEFAULT 1,
+                notification_channels TEXT DEFAULT '[]',
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS oncall_schedules (
+                id TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                team TEXT NOT NULL,
+                members TEXT NOT NULL,
+                rotation_type TEXT DEFAULT 'weekly',
+                current_index INTEGER DEFAULT 0,
+                escalation_minutes INTEGER DEFAULT 15,
+                start_date TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS oncall_overrides (
+                id TEXT PRIMARY KEY,
+                schedule_id TEXT NOT NULL,
+                original_member TEXT,
+                override_member TEXT NOT NULL,
+                start_time TEXT NOT NULL,
+                end_time TEXT NOT NULL,
+                reason TEXT
+            );
+
+            CREATE TABLE IF NOT EXISTS dashboard_layouts (
+                id TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                description TEXT,
+                widgets TEXT NOT NULL,
+                layout TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            );
         """)
         _seed_default_thresholds(conn)
 
