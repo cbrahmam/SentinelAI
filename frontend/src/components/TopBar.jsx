@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Activity, AlertTriangle, Play, Square, Zap, AlertOctagon, Network, ScrollText, BarChart3, Flame, BookOpen, FileText, Shield, Rocket, TrendingUp, Bell, Phone } from 'lucide-react'
+import { Activity, AlertTriangle, Play, Square, Zap, AlertOctagon, Network, ScrollText, BarChart3, Flame, BookOpen, FileText, Shield, Rocket, TrendingUp, Bell, Phone, LayoutGrid } from 'lucide-react'
 import useStore from '../stores/useStore'
 
 const TIME_RANGES = ['15m', '1h', '6h', '24h', '7d']
@@ -74,6 +74,9 @@ export default function TopBar() {
             </Link>
             <Link to="/oncall" className={`flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium transition-colors ${location.pathname === '/oncall' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-200'}`}>
               <Phone className="w-3 h-3" /> On-Call
+            </Link>
+            <Link to="/builder" className={`flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium transition-colors ${location.pathname === '/builder' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-200'}`}>
+              <LayoutGrid className="w-3 h-3" /> Builder
             </Link>
             <Link to="/predictions" className={`flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium transition-colors ${location.pathname === '/predictions' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-200'}`}>
               <TrendingUp className="w-3 h-3" /> Predict

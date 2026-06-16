@@ -21,6 +21,7 @@ import DeployMarkers from './components/DeployMarkers'
 import PredictiveAlerts from './components/PredictiveAlerts'
 import AlertRules from './components/AlertRules'
 import OnCallSchedule from './components/OnCallSchedule'
+import DashboardBuilder from './components/DashboardBuilder'
 import AIChatPanel from './components/AIChatPanel'
 import ToastContainer, { toast } from './components/ToastContainer'
 
@@ -124,6 +125,7 @@ function AppContent() {
         <Route path="/predictions" element={<Page><PredictiveAlerts /></Page>} />
         <Route path="/rules" element={<Page><AlertRules /></Page>} />
         <Route path="/oncall" element={<Page><OnCallSchedule /></Page>} />
+        <Route path="/builder" element={<Page><DashboardBuilder /></Page>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <AIChatPanel />
