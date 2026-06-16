@@ -18,6 +18,7 @@ import RunbookLibrary from './components/RunbookLibrary'
 import ReportGenerator from './components/ReportGenerator'
 import SLODashboard from './components/SLODashboard'
 import DeployMarkers from './components/DeployMarkers'
+import PredictiveAlerts from './components/PredictiveAlerts'
 import AIChatPanel from './components/AIChatPanel'
 import ToastContainer, { toast } from './components/ToastContainer'
 
@@ -118,6 +119,7 @@ function AppContent() {
         <Route path="/report" element={<Page><ReportGenerator /></Page>} />
         <Route path="/slo" element={<Page><SLODashboard /></Page>} />
         <Route path="/deploys" element={<Page><DeployMarkers /></Page>} />
+        <Route path="/predictions" element={<Page><PredictiveAlerts /></Page>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <AIChatPanel />
