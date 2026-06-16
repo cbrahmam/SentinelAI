@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.config import CORS_ORIGINS
 from backend.database import init_db
-from backend.routers import ingest, metrics, logs, services as services_router, stream, alerts, incidents, thresholds, anomalies, dashboard, correlations, traces, ai_chat, chaos, slo, deploys
+from backend.routers import ingest, metrics, logs, services as services_router, stream, alerts, incidents, thresholds, anomalies, dashboard, correlations, traces, ai_chat, chaos, slo, deploys, predictions
 from backend.services.monitor import start_monitor, stop_monitor
 
 app = FastAPI(
@@ -52,3 +52,4 @@ app.include_router(ai_chat.router, prefix="/api/ask", tags=["AI Chat"])
 app.include_router(chaos.router, prefix="/api/chaos", tags=["Chaos & Runbooks"])
 app.include_router(slo.router, prefix="/api", tags=["SLO & Dashboards"])
 app.include_router(deploys.router, prefix="/api/deploys", tags=["Deployments"])
+app.include_router(predictions.router, prefix="/api/predictions", tags=["Predictions"])
