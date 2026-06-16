@@ -29,6 +29,7 @@ function CustomTooltip({ active, payload, label }) {
 function MetricChart({ config }) {
   const [data, setData] = useState([])
   const [anomalyRegions, setAnomalyRegions] = useState([])
+  const [deployLines, setDeployLines] = useState([])
   const fetchMetrics = useStore((s) => s.fetchMetrics)
   const timeRange = useStore((s) => s.timeRange)
 
@@ -47,6 +48,20 @@ function MetricChart({ config }) {
             .filter(a => a.metric_name === config.metric)
             .map(a => a.timestamp)
         )
+      } catch {}
+
+      const trMap = { '15m': 0.25, '1h': 1, '6h': 6, '24h': 24, '7d': 168 }
+      const hours = trMap[timeRange] || 1
+      try {
+        const dRes = await fetch(`/api/deploys/chart/${config.service}?hours=${hours}`)
+        const dd = await dRes.json()
+        if (!cancelled) {
+          setDeployLines((dd.deploys || []).map(d => ({
+            time: format(new Date(d.timestamp), 'HH:mm'),
+            version: d.version,
+            status: d.status,
+          })))
+        }
       } catch {}
 
       const anomalySet = new Set(anomalies)
@@ -131,6 +146,16 @@ function MetricChart({ config }) {
                   fillOpacity={0.1}
                   stroke="#EF4444"
                   strokeOpacity={0.3}
+                />
+              ))}
+              {deployLines.map((d, i) => (
+                <ReferenceLine
+                  key={`deploy-${i}`}
+                  x={d.time}
+                  stroke="#06B6D4"
+                  strokeDasharray="3 3"
+                  strokeWidth={1.5}
+                  label={{ value: `▲ ${d.version}`, position: 'top', fontSize: 9, fill: '#06B6D4' }}
                 />
               ))}
               <Line
