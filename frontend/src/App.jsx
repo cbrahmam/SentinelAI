@@ -20,6 +20,7 @@ import SLODashboard from './components/SLODashboard'
 import DeployMarkers from './components/DeployMarkers'
 import PredictiveAlerts from './components/PredictiveAlerts'
 import AlertRules from './components/AlertRules'
+import OnCallSchedule from './components/OnCallSchedule'
 import AIChatPanel from './components/AIChatPanel'
 import ToastContainer, { toast } from './components/ToastContainer'
 
@@ -122,6 +123,7 @@ function AppContent() {
         <Route path="/deploys" element={<Page><DeployMarkers /></Page>} />
         <Route path="/predictions" element={<Page><PredictiveAlerts /></Page>} />
         <Route path="/rules" element={<Page><AlertRules /></Page>} />
+        <Route path="/oncall" element={<Page><OnCallSchedule /></Page>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <AIChatPanel />
