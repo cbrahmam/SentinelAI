@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Activity, AlertTriangle, Play, Square, Zap, AlertOctagon, Network, ScrollText, BarChart3, Flame, BookOpen, FileText, Shield, Rocket, TrendingUp } from 'lucide-react'
+import { Activity, AlertTriangle, Play, Square, Zap, AlertOctagon, Network, ScrollText, BarChart3, Flame, BookOpen, FileText, Shield, Rocket, TrendingUp, Bell } from 'lucide-react'
 import useStore from '../stores/useStore'
 
 const TIME_RANGES = ['15m', '1h', '6h', '24h', '7d']
@@ -68,6 +68,9 @@ export default function TopBar() {
             </Link>
             <Link to="/slo" className={`flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium transition-colors ${location.pathname === '/slo' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-200'}`}>
               <Shield className="w-3 h-3" /> SLO
+            </Link>
+            <Link to="/rules" className={`flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium transition-colors ${location.pathname === '/rules' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-200'}`}>
+              <Bell className="w-3 h-3" /> Rules
             </Link>
             <Link to="/predictions" className={`flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium transition-colors ${location.pathname === '/predictions' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-200'}`}>
               <TrendingUp className="w-3 h-3" /> Predict
