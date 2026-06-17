@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.config import CORS_ORIGINS
 from backend.database import init_db
-from backend.routers import ingest, metrics, logs, services as services_router, stream, alerts, incidents, thresholds, anomalies, dashboard, correlations, traces, ai_chat, chaos, slo, deploys, predictions, alert_rules, oncall, dashboard_builder, status_page, postmortem, heatmap, notifications
+from backend.routers import ingest, metrics, logs, services as services_router, stream, alerts, incidents, thresholds, anomalies, dashboard, correlations, traces, ai_chat, chaos, slo, deploys, predictions, alert_rules, oncall, dashboard_builder, status_page, postmortem, heatmap, notifications, health_scores
 from backend.services.monitor import start_monitor, stop_monitor
 
 app = FastAPI(
@@ -60,3 +60,4 @@ app.include_router(status_page.router, prefix="/api/status", tags=["Status Page"
 app.include_router(postmortem.router, prefix="/api/postmortem", tags=["Postmortem"])
 app.include_router(heatmap.router, prefix="/api/heatmap", tags=["Heatmap"])
 app.include_router(notifications.router, prefix="/api/notifications", tags=["Notifications"])
+app.include_router(health_scores.router, prefix="/api/health-scores", tags=["Health Scores"])
