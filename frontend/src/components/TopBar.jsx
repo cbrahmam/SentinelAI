@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Activity, AlertTriangle, Play, Square, Zap, AlertOctagon, Network, ScrollText, BarChart3, Flame, BookOpen, FileText, Shield, Rocket, TrendingUp, Bell, Phone, LayoutGrid, Globe, Grid3X3 } from 'lucide-react'
+import { Activity, AlertTriangle, Play, Square, Zap, AlertOctagon, Network, ScrollText, BarChart3, Flame, BookOpen, FileText, Shield, Rocket, TrendingUp, Bell, Phone, LayoutGrid, Globe, Grid3X3, MessageSquare } from 'lucide-react'
 import useStore from '../stores/useStore'
 
 const TIME_RANGES = ['15m', '1h', '6h', '24h', '7d']
@@ -95,6 +95,9 @@ export default function TopBar() {
             </Link>
             <Link to="/heatmap" className={`flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium transition-colors ${location.pathname === '/heatmap' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-200'}`}>
               <Grid3X3 className="w-3 h-3" /> Heatmap
+            </Link>
+            <Link to="/notifications" className={`flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium transition-colors ${location.pathname === '/notifications' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-200'}`}>
+              <MessageSquare className="w-3 h-3" /> Notify
             </Link>
             <Link to="/status" className={`flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium transition-colors ${location.pathname === '/status' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-200'}`}>
               <Globe className="w-3 h-3" /> Status
