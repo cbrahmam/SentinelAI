@@ -26,6 +26,7 @@ import StatusPage from './components/StatusPage'
 import PostmortemView from './components/PostmortemView'
 import AnomalyHeatmap from './components/AnomalyHeatmap'
 import NotificationChannels from './components/NotificationChannels'
+import HealthScores from './components/HealthScores'
 import AIChatPanel from './components/AIChatPanel'
 import ToastContainer, { toast } from './components/ToastContainer'
 
@@ -134,6 +135,7 @@ function AppContent() {
         <Route path="/postmortem/:id" element={<Page><PostmortemView /></Page>} />
         <Route path="/heatmap" element={<Page><AnomalyHeatmap /></Page>} />
         <Route path="/notifications" element={<Page><NotificationChannels /></Page>} />
+        <Route path="/health" element={<Page><HealthScores /></Page>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <AIChatPanel />
