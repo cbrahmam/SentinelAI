@@ -36,6 +36,11 @@ SentinelAI continuously monitors metrics and logs across your entire infrastruct
 - **Custom alert rules** — User-defined alert policies with 6 condition operators, severity levels, and toggle controls
 - **On-call schedules** — Rotation management (weekly/daily), escalation chains, override support
 - **Dashboard builder** — Composable widget grid with 8 widget types, per-widget config, save/load layouts
+- **Public status page** — Statuspage.io-style service health display with 30-day uptime history bars
+- **Incident postmortems** — AI-generated blameless postmortem docs with timeline, root cause, action items
+- **Anomaly heatmap** — Time-vs-service density grid revealing anomaly patterns and noisy services
+- **Notification channels** — Simulated Slack/PagerDuty/email/webhook delivery with log history
+- **Service health scores** — Composite 0-100 scores with letter grades, trend arrows, per-metric breakdown
 - **Real-time streaming** — Server-Sent Events for live metrics, logs, and alerts with auto-reconnect
 - **Built-in simulator** — 8 microservices with realistic metrics, logs, and anomaly injection
 
@@ -223,6 +228,16 @@ api-gateway ──▶ auth-service ──▶ postgres-primary
 | `/api/oncall/{id}/escalation` | GET | Escalation chain for a schedule |
 | `/api/layouts` | GET/POST | List or create dashboard layouts |
 | `/api/layouts/widget-types` | GET | Available widget types for builder |
+| `/api/status` | GET | Public status page with per-service health |
+| `/api/postmortem/{id}` | POST | Generate AI-powered postmortem for incident |
+| `/api/heatmap` | GET | Anomaly density heatmap across services |
+| `/api/heatmap/{service}` | GET | Per-service metric heatmap breakdown |
+| `/api/notifications/channels` | GET/POST | List or create notification channels |
+| `/api/notifications/send` | POST | Send notification to a channel |
+| `/api/notifications/log` | GET | Notification delivery log |
+| `/api/notifications/{id}/test` | POST | Test a notification channel |
+| `/api/health-scores` | GET | Composite health scores for all services |
+| `/api/health-scores/{service}` | GET | Detailed health score for a service |
 
 ## Project Structure
 
@@ -255,7 +270,12 @@ SentinelAI/
 │   │   ├── predictor.py           # Linear regression forecasting
 │   │   ├── alert_rules.py         # Custom alert rule engine
 │   │   ├── oncall_manager.py      # On-call rotation & escalation
-│   │   └── dashboard_builder.py   # Dashboard layout persistence
+│   │   ├── dashboard_builder.py   # Dashboard layout persistence
+│   │   ├── status_page.py         # Public status computation
+│   │   ├── postmortem_generator.py# AI postmortem generation
+│   │   ├── anomaly_heatmap.py     # Anomaly density heatmap
+│   │   ├── notification_manager.py# Multi-channel notifications
+│   │   └── health_score.py        # Composite health scoring
 │   ├── generators/
 │   │   └── simulator.py           # 8-service data simulator
 │   └── routers/                   # FastAPI route handlers
@@ -284,7 +304,12 @@ SentinelAI/
 │   │       ├── PredictiveAlerts.jsx# Prediction countdown cards
 │   │       ├── AlertRules.jsx     # Alert rule builder
 │   │       ├── OnCallSchedule.jsx # On-call management
-│   │       └── DashboardBuilder.jsx# Widget-based dashboard builder
+│   │       ├── DashboardBuilder.jsx# Widget-based dashboard builder
+│   │       ├── StatusPage.jsx     # Public status page
+│   │       ├── PostmortemView.jsx  # Postmortem document viewer
+│   │       ├── AnomalyHeatmap.jsx # Anomaly density heatmap
+│   │       ├── NotificationChannels.jsx # Channel management
+│   │       └── HealthScores.jsx   # Health score rings & grades
 │   └── vite.config.js             # Vite + proxy config
 ├── .env.example
 └── README.md
