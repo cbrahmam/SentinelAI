@@ -262,8 +262,14 @@ export default function IncidentDetail() {
                   <p className="text-sm text-gray-200">{inc.resolution}</p>
                 </div>
               )}
+              <div className="flex items-center gap-2 mt-2">
+                <Link to={`/postmortem/${inc.id}`}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-500/15 text-purple-400 rounded-lg text-xs font-medium hover:bg-purple-500/25">
+                  <FileText className="w-3.5 h-3.5" /> Generate Postmortem
+                </Link>
+              </div>
               {inc.postmortem && (
-                <div>
+                <div className="mt-3">
                   <h4 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5">Post-Mortem</h4>
                   <pre className="text-sm text-gray-300 bg-gray-800/50 rounded p-3 whitespace-pre-wrap font-mono text-xs leading-relaxed">
                     {inc.postmortem}
