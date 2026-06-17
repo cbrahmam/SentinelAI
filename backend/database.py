@@ -171,6 +171,28 @@ def init_db():
                 reason TEXT
             );
 
+            CREATE TABLE IF NOT EXISTS notification_channels (
+                id TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                channel_type TEXT NOT NULL,
+                config TEXT NOT NULL,
+                enabled INTEGER DEFAULT 1,
+                created_at TEXT NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS notification_log (
+                id TEXT PRIMARY KEY,
+                channel_id TEXT NOT NULL,
+                channel_name TEXT,
+                channel_type TEXT,
+                event_type TEXT NOT NULL,
+                title TEXT NOT NULL,
+                message TEXT,
+                status TEXT DEFAULT 'delivered',
+                sent_at TEXT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_notif_log_time ON notification_log(sent_at);
+
             CREATE TABLE IF NOT EXISTS dashboard_layouts (
                 id TEXT PRIMARY KEY,
                 name TEXT NOT NULL,
