@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.config import CORS_ORIGINS
 from backend.database import init_db
-from backend.routers import ingest, metrics, logs, services as services_router, stream, alerts, incidents, thresholds, anomalies, dashboard, correlations, traces, ai_chat, chaos, slo, deploys, predictions, alert_rules, oncall, dashboard_builder, status_page, postmortem
+from backend.routers import ingest, metrics, logs, services as services_router, stream, alerts, incidents, thresholds, anomalies, dashboard, correlations, traces, ai_chat, chaos, slo, deploys, predictions, alert_rules, oncall, dashboard_builder, status_page, postmortem, heatmap
 from backend.services.monitor import start_monitor, stop_monitor
 
 app = FastAPI(
@@ -58,3 +58,4 @@ app.include_router(oncall.router, prefix="/api/oncall", tags=["On-Call"])
 app.include_router(dashboard_builder.router, prefix="/api/layouts", tags=["Dashboard Builder"])
 app.include_router(status_page.router, prefix="/api/status", tags=["Status Page"])
 app.include_router(postmortem.router, prefix="/api/postmortem", tags=["Postmortem"])
+app.include_router(heatmap.router, prefix="/api/heatmap", tags=["Heatmap"])
