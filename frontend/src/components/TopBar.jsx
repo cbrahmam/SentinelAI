@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Activity, AlertTriangle, Play, Square, Zap, AlertOctagon, Network, ScrollText, BarChart3, Flame, BookOpen, FileText, Shield, Rocket, TrendingUp, Bell, Phone, LayoutGrid, Globe, Grid3X3, MessageSquare, Heart, ClipboardList, FileCheck, Crosshair, Fingerprint } from 'lucide-react'
+import { Activity, AlertTriangle, Play, Square, Zap, AlertOctagon, Network, ScrollText, BarChart3, Flame, BookOpen, FileText, Shield, Rocket, TrendingUp, Bell, Phone, LayoutGrid, Globe, Grid3X3, MessageSquare, Heart, ClipboardList, FileCheck, Crosshair, Fingerprint, DollarSign } from 'lucide-react'
 import useStore from '../stores/useStore'
 
 const TIME_RANGES = ['15m', '1h', '6h', '24h', '7d']
@@ -113,6 +113,9 @@ export default function TopBar() {
             </Link>
             <Link to="/fingerprints" className={`flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium transition-colors ${location.pathname === '/fingerprints' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-200'}`}>
               <Fingerprint className="w-3 h-3" /> Patterns
+            </Link>
+            <Link to="/cost" className={`flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium transition-colors ${location.pathname === '/cost' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-200'}`}>
+              <DollarSign className="w-3 h-3" /> Cost
             </Link>
             <Link to="/status" className={`flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium transition-colors ${location.pathname === '/status' ? 'bg-gray-700 text-white' : 'text-gray-400 hover:text-gray-200'}`}>
               <Globe className="w-3 h-3" /> Status
