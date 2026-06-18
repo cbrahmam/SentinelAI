@@ -41,6 +41,11 @@ SentinelAI continuously monitors metrics and logs across your entire infrastruct
 - **Anomaly heatmap** — Time-vs-service density grid revealing anomaly patterns and noisy services
 - **Notification channels** — Simulated Slack/PagerDuty/email/webhook delivery with log history
 - **Service health scores** — Composite 0-100 scores with letter grades, trend arrows, per-metric breakdown
+- **Audit log & change tracker** — Records config changes with correlated timeline (deploys, incidents, config edits)
+- **SLA compliance reports** — Per-service uptime tracking, breach detection, 12-week trend charts, markdown export
+- **Dependency impact analyzer** — "What if X goes down?" blast radius simulator with propagation chains
+- **Anomaly fingerprinting** — Clusters recurring anomaly patterns with confidence scores and pattern library
+- **Cost & resource optimizer** — Utilization-based right-sizing recommendations with savings projections
 - **Real-time streaming** — Server-Sent Events for live metrics, logs, and alerts with auto-reconnect
 - **Built-in simulator** — 8 microservices with realistic metrics, logs, and anomaly injection
 
@@ -238,6 +243,18 @@ api-gateway ──▶ auth-service ──▶ postgres-primary
 | `/api/notifications/{id}/test` | POST | Test a notification channel |
 | `/api/health-scores` | GET | Composite health scores for all services |
 | `/api/health-scores/{service}` | GET | Detailed health score for a service |
+| `/api/audit` | GET/POST | Audit log events |
+| `/api/audit/timeline` | GET | Correlated timeline (changes + incidents + deploys) |
+| `/api/audit/stats` | GET | Audit event statistics |
+| `/api/sla-report` | GET | SLA compliance report |
+| `/api/sla-report/trends` | GET | 12-week SLA trend data |
+| `/api/sla-report/export` | GET | Export SLA report as Markdown |
+| `/api/impact` | GET | Impact comparison across all services |
+| `/api/impact/{service}` | GET | Blast radius analysis for a service |
+| `/api/fingerprints` | GET | Detected anomaly patterns |
+| `/api/fingerprints/patterns` | GET | Known pattern library |
+| `/api/fingerprints/match/{id}` | GET | Match a single alert to known patterns |
+| `/api/cost` | GET | Cost analysis with right-sizing recommendations |
 
 ## Project Structure
 
@@ -275,7 +292,12 @@ SentinelAI/
 │   │   ├── postmortem_generator.py# AI postmortem generation
 │   │   ├── anomaly_heatmap.py     # Anomaly density heatmap
 │   │   ├── notification_manager.py# Multi-channel notifications
-│   │   └── health_score.py        # Composite health scoring
+│   │   ├── health_score.py        # Composite health scoring
+│   │   ├── audit_logger.py        # Change tracking & audit log
+│   │   ├── sla_reporter.py        # SLA compliance reporting
+│   │   ├── impact_analyzer.py     # Dependency impact analysis
+│   │   ├── fingerprint_engine.py  # Anomaly pattern matching
+│   │   └── cost_optimizer.py      # Resource right-sizing
 │   ├── generators/
 │   │   └── simulator.py           # 8-service data simulator
 │   └── routers/                   # FastAPI route handlers
@@ -309,7 +331,12 @@ SentinelAI/
 │   │       ├── PostmortemView.jsx  # Postmortem document viewer
 │   │       ├── AnomalyHeatmap.jsx # Anomaly density heatmap
 │   │       ├── NotificationChannels.jsx # Channel management
-│   │       └── HealthScores.jsx   # Health score rings & grades
+│   │       ├── HealthScores.jsx   # Health score rings & grades
+│   │       ├── AuditLog.jsx       # Audit log & change tracker
+│   │       ├── SLAReport.jsx      # SLA compliance reports
+│   │       ├── ImpactAnalyzer.jsx # Dependency impact simulator
+│   │       ├── AnomalyFingerprints.jsx # Pattern matching
+│   │       └── CostOptimizer.jsx  # Cost & resource optimizer
 │   └── vite.config.js             # Vite + proxy config
 ├── .env.example
 └── README.md
