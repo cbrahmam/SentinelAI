@@ -202,6 +202,34 @@ def init_db():
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL
             );
+
+            CREATE TABLE IF NOT EXISTS audit_log (
+                id TEXT PRIMARY KEY,
+                actor TEXT NOT NULL,
+                action TEXT NOT NULL,
+                resource_type TEXT NOT NULL,
+                resource_id TEXT,
+                resource_name TEXT,
+                details TEXT,
+                timestamp TEXT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_audit_time ON audit_log(timestamp);
+            CREATE INDEX IF NOT EXISTS idx_audit_resource ON audit_log(resource_type, resource_id);
+
+            CREATE TABLE IF NOT EXISTS anomaly_fingerprints (
+                id TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                pattern_signature TEXT NOT NULL,
+                services TEXT NOT NULL,
+                metrics TEXT NOT NULL,
+                description TEXT,
+                occurrence_count INTEGER DEFAULT 1,
+                avg_duration_minutes REAL,
+                last_seen TEXT NOT NULL,
+                first_seen TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_fingerprint_sig ON anomaly_fingerprints(pattern_signature);
         """)
         _seed_default_thresholds(conn)
 
