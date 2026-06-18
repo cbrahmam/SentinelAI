@@ -30,6 +30,7 @@ import HealthScores from './components/HealthScores'
 import AuditLog from './components/AuditLog'
 import SLAReport from './components/SLAReport'
 import ImpactAnalyzer from './components/ImpactAnalyzer'
+import AnomalyFingerprints from './components/AnomalyFingerprints'
 import AIChatPanel from './components/AIChatPanel'
 import ToastContainer, { toast } from './components/ToastContainer'
 
@@ -142,6 +143,7 @@ function AppContent() {
         <Route path="/audit" element={<Page><AuditLog /></Page>} />
         <Route path="/sla-report" element={<Page><SLAReport /></Page>} />
         <Route path="/impact" element={<Page><ImpactAnalyzer /></Page>} />
+        <Route path="/fingerprints" element={<Page><AnomalyFingerprints /></Page>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <AIChatPanel />
