@@ -29,6 +29,7 @@ import NotificationChannels from './components/NotificationChannels'
 import HealthScores from './components/HealthScores'
 import AuditLog from './components/AuditLog'
 import SLAReport from './components/SLAReport'
+import ImpactAnalyzer from './components/ImpactAnalyzer'
 import AIChatPanel from './components/AIChatPanel'
 import ToastContainer, { toast } from './components/ToastContainer'
 
@@ -140,6 +141,7 @@ function AppContent() {
         <Route path="/health" element={<Page><HealthScores /></Page>} />
         <Route path="/audit" element={<Page><AuditLog /></Page>} />
         <Route path="/sla-report" element={<Page><SLAReport /></Page>} />
+        <Route path="/impact" element={<Page><ImpactAnalyzer /></Page>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <AIChatPanel />
