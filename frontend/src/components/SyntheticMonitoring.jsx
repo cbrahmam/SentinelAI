@@ -183,6 +183,27 @@ export default function SyntheticMonitoring() {
           ) : (
             <p className="text-xs text-gray-500">No probe results yet — hit Run to collect samples.</p>
           )}
+
+          <div>
+            <h3 className="text-sm font-semibold text-white mb-2 flex items-center gap-2">
+              <Globe className="w-4 h-4 text-sky-400" /> By region
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {Object.entries(analytics[selected]?.regions || {}).map(([region, s]) => (
+                <div key={region} className="bg-[#0B0F19] border border-gray-700/50 rounded-lg p-3">
+                  <p className="text-xs font-medium text-gray-300 mb-1">{region}</p>
+                  <div className="flex items-baseline justify-between">
+                    <span className={`text-base font-bold ${uptimeColor(s.uptime_pct)}`}>{s.uptime_pct}%</span>
+                    <span className="text-[11px] text-gray-500">{s.p95_latency_ms != null ? `${s.p95_latency_ms}ms p95` : '—'}</span>
+                  </div>
+                  <p className="text-[10px] text-gray-600 mt-0.5">{s.successes}/{s.checks} ok</p>
+                </div>
+              ))}
+              {!Object.keys(analytics[selected]?.regions || {}).length && (
+                <p className="text-xs text-gray-500">No regional data yet.</p>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>
