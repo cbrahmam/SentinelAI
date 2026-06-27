@@ -1,7 +1,11 @@
 import random
+import uuid
 from datetime import datetime, timezone
 from backend.database import get_db
-from backend.services.probe_store import record_result
+from backend.services.probe_store import record_result, get_results
+
+# Number of consecutive failed probes (across regions) before a probe alert fires.
+FAILURE_THRESHOLD = 3
 
 # Baseline added latency per region (ms) to simulate geographic distance.
 REGION_LATENCY = {
@@ -85,4 +89,61 @@ def probe_check(check: dict, persist: bool = True) -> list[dict]:
         if persist:
             record_result(result)
         results.append(result)
+    if persist:
+        evaluate_failures(check)
     return results
+
+
+def _recent_consecutive_failures(check_id: str) -> int:
+    """Count trailing consecutive failed probes in the recent history."""
+    recent = get_results(check_id, hours=2)
+    streak = 0
+    for r in reversed(recent):
+        if r["success"]:
+            break
+        streak += 1
+    return streak
+
+
+def evaluate_failures(check: dict) -> dict | None:
+    """Fire a probe alert after FAILURE_THRESHOLD consecutive failures.
+
+    Auto-resolves the firing alert once a probe succeeds again.
+    """
+    streak = _recent_consecutive_failures(check["id"])
+    now = datetime.now(timezone.utc).isoformat()
+
+    with get_db() as conn:
+        existing = conn.execute(
+            "SELECT id FROM alerts WHERE service = ? AND metric_name = 'synthetic_probe' AND status = 'firing'",
+            (check["service"],),
+        ).fetchone()
+
+        if streak >= FAILURE_THRESHOLD:
+            if existing:
+                conn.execute(
+                    "UPDATE alerts SET current_value = ? WHERE id = ?",
+                    (streak, existing["id"]),
+                )
+                return {"id": existing["id"], "action": "updated"}
+            alert_id = str(uuid.uuid4())[:8]
+            title = f"CRITICAL: synthetic probe failing for {check['name']}"
+            description = (
+                f"Synthetic check '{check['name']}' ({check['target_url']}) has failed "
+                f"{streak} consecutive probes across regions."
+            )
+            conn.execute(
+                """INSERT INTO alerts (id, service, metric_name, alert_type, severity, title,
+                   description, current_value, threshold_value, status, fired_at)
+                   VALUES (?, ?, 'synthetic_probe', 'synthetic', 'critical', ?, ?, ?, ?, 'firing', ?)""",
+                (alert_id, check["service"], title, description, streak, FAILURE_THRESHOLD, now),
+            )
+            return {"id": alert_id, "action": "created"}
+
+        if existing:
+            conn.execute(
+                "UPDATE alerts SET status = 'resolved', resolved_at = ?, resolved_by = 'synthetic-monitor' WHERE id = ?",
+                (now, existing["id"]),
+            )
+            return {"id": existing["id"], "action": "resolved"}
+    return None
