@@ -9,6 +9,24 @@ const STATUS_STYLES = {
   unknown: { icon: HelpCircle, text: 'text-gray-500', border: 'border-gray-700/50', label: 'No data' },
 }
 
+function UptimeTimeline({ results }) {
+  const recent = results.slice(-80)
+  if (!recent.length) {
+    return <p className="text-xs text-gray-500">No probes recorded yet.</p>
+  }
+  return (
+    <div className="flex items-end gap-[2px] h-8">
+      {recent.map((r) => (
+        <div
+          key={r.id}
+          title={`${r.region} · ${r.success ? 'up' : (r.error || 'down')} · ${r.latency_ms ?? '—'}ms\n${new Date(r.checked_at).toLocaleString()}`}
+          className={`flex-1 min-w-[3px] rounded-sm ${r.success ? 'bg-emerald-500/80 h-full' : 'bg-red-500/80 h-full'}`}
+        />
+      ))}
+    </div>
+  )
+}
+
 function uptimeColor(pct) {
   if (pct >= 99.5) return 'text-emerald-400'
   if (pct >= 97) return 'text-amber-400'
@@ -137,6 +155,15 @@ export default function SyntheticMonitoring() {
 
       {selected && (
         <div className="bg-[#111827] border border-gray-700/50 rounded-lg p-4 space-y-4">
+          <div>
+            <h3 className="text-sm font-semibold text-white mb-2">Uptime timeline</h3>
+            <UptimeTimeline results={results} />
+            <div className="flex items-center gap-3 mt-1.5 text-[10px] text-gray-500">
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-emerald-500/80" /> up</span>
+              <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-red-500/80" /> down</span>
+              <span className="ml-auto">oldest → newest</span>
+            </div>
+          </div>
           <h3 className="text-sm font-semibold text-white flex items-center gap-2">
             <Activity className="w-4 h-4 text-sky-400" /> Latency history (24h)
           </h3>
