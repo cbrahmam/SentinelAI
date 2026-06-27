@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Radar, RefreshCw, Play, CheckCircle2, XCircle, HelpCircle, Globe } from 'lucide-react'
+import { Radar, RefreshCw, Play, CheckCircle2, XCircle, HelpCircle, Globe, Activity } from 'lucide-react'
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from 'recharts'
 import useStore from '../stores/useStore'
 
 const STATUS_STYLES = {
@@ -21,6 +22,21 @@ export default function SyntheticMonitoring() {
   const [analytics, setAnalytics] = useState({})
   const [loading, setLoading] = useState(false)
   const [running, setRunning] = useState(null)
+  const [selected, setSelected] = useState(null)
+  const [results, setResults] = useState([])
+
+  const loadResults = async (id) => {
+    try {
+      const res = await fetch(`/api/synthetic/${id}/results?hours=24`)
+      const d = await res.json()
+      setResults(d.results || [])
+    } catch { setResults([]) }
+  }
+
+  const selectCheck = async (id) => {
+    setSelected(id)
+    await loadResults(id)
+  }
 
   const loadAnalytics = async (list) => {
     const entries = await Promise.all(
@@ -47,8 +63,18 @@ export default function SyntheticMonitoring() {
     setRunning(id)
     await runCheck(id)
     await loadAnalytics(checks)
+    if (selected === id) await loadResults(id)
     setRunning(null)
   }
+
+  const chartData = results
+    .filter((r) => r.latency_ms != null)
+    .map((r) => ({
+      time: new Date(r.checked_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      latency: r.latency_ms,
+      region: r.region,
+      success: r.success,
+    }))
 
   return (
     <div className="space-y-4">
@@ -71,7 +97,8 @@ export default function SyntheticMonitoring() {
           const uptime = a?.overall?.uptime_pct
           const p95 = a?.overall?.p95_latency_ms
           return (
-            <div key={c.id} className={`bg-[#111827] border rounded-lg p-4 ${style.border}`}>
+            <div key={c.id} onClick={() => selectCheck(c.id)}
+              className={`bg-[#111827] border rounded-lg p-4 cursor-pointer transition-colors hover:border-sky-500/40 ${selected === c.id ? 'border-sky-500/60' : style.border}`}>
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
@@ -86,7 +113,7 @@ export default function SyntheticMonitoring() {
                     <span className={style.text}>· {style.label}</span>
                   </div>
                 </div>
-                <button onClick={() => handleRun(c.id)} disabled={running === c.id}
+                <button onClick={(e) => { e.stopPropagation(); handleRun(c.id) }} disabled={running === c.id}
                   className="flex items-center gap-1 px-2 py-1 bg-gray-800 text-gray-300 rounded text-[11px] hover:bg-gray-700 disabled:opacity-50">
                   <Play className={`w-3 h-3 ${running === c.id ? 'animate-pulse' : ''}`} /> Run
                 </button>
@@ -107,6 +134,30 @@ export default function SyntheticMonitoring() {
           )
         })}
       </div>
+
+      {selected && (
+        <div className="bg-[#111827] border border-gray-700/50 rounded-lg p-4 space-y-4">
+          <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+            <Activity className="w-4 h-4 text-sky-400" /> Latency history (24h)
+          </h3>
+          {chartData.length ? (
+            <ResponsiveContainer width="100%" height={220}>
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+                <XAxis dataKey="time" stroke="#6b7280" fontSize={10} minTickGap={40} />
+                <YAxis stroke="#6b7280" fontSize={10} unit="ms" width={48} />
+                <Tooltip
+                  contentStyle={{ background: '#0B0F19', border: '1px solid #374151', borderRadius: 8, fontSize: 12 }}
+                  labelStyle={{ color: '#9ca3af' }}
+                />
+                <Line type="monotone" dataKey="latency" stroke="#38bdf8" strokeWidth={2} dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <p className="text-xs text-gray-500">No probe results yet — hit Run to collect samples.</p>
+          )}
+        </div>
+      )}
     </div>
   )
 }
