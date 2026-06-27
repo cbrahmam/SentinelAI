@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Radar, RefreshCw, Play, CheckCircle2, XCircle, HelpCircle, Globe, Activity } from 'lucide-react'
+import { Radar, RefreshCw, Play, CheckCircle2, XCircle, HelpCircle, Globe, Activity, Plus } from 'lucide-react'
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from 'recharts'
 import useStore from '../stores/useStore'
 
@@ -7,6 +7,70 @@ const STATUS_STYLES = {
   up: { icon: CheckCircle2, text: 'text-emerald-400', border: 'border-emerald-500/30', label: 'Operational' },
   down: { icon: XCircle, text: 'text-red-400', border: 'border-red-500/40', label: 'Down' },
   unknown: { icon: HelpCircle, text: 'text-gray-500', border: 'border-gray-700/50', label: 'No data' },
+}
+
+const SERVICES = [
+  'api-gateway', 'auth-service', 'user-service', 'payment-service',
+  'notification-service', 'postgres-primary', 'redis-cache', 'rabbitmq',
+]
+const ALL_REGIONS = ['us-east', 'us-west', 'eu-west', 'ap-south', 'sa-east']
+
+function CreateCheckForm({ onCreate, onClose }) {
+  const [form, setForm] = useState({
+    name: '', service: SERVICES[0], target_url: '', method: 'GET',
+    interval_seconds: 60, timeout_ms: 3000, expected_status: 200,
+    regions: ['us-east', 'us-west', 'eu-west'],
+  })
+  const [saving, setSaving] = useState(false)
+  const set = (k, v) => setForm((f) => ({ ...f, [k]: v }))
+  const toggleRegion = (r) =>
+    setForm((f) => ({ ...f, regions: f.regions.includes(r) ? f.regions.filter((x) => x !== r) : [...f.regions, r] }))
+
+  const submit = async () => {
+    if (!form.name || !form.target_url || !form.regions.length) return
+    setSaving(true)
+    await onCreate({ ...form, interval_seconds: Number(form.interval_seconds), timeout_ms: Number(form.timeout_ms), expected_status: Number(form.expected_status) })
+    setSaving(false)
+    onClose()
+  }
+
+  const field = 'bg-gray-800 text-gray-200 text-xs rounded-lg px-3 py-2 border border-gray-700 w-full'
+  return (
+    <div className="bg-[#111827] border border-sky-500/30 rounded-lg p-4 space-y-3">
+      <h3 className="text-sm font-semibold text-white">New synthetic check</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <input className={field} placeholder="Check name" value={form.name} onChange={(e) => set('name', e.target.value)} />
+        <select className={field} value={form.service} onChange={(e) => set('service', e.target.value)}>
+          {SERVICES.map((s) => <option key={s} value={s}>{s}</option>)}
+        </select>
+        <input className={`${field} md:col-span-2`} placeholder="https://target.internal/healthz" value={form.target_url} onChange={(e) => set('target_url', e.target.value)} />
+        <select className={field} value={form.method} onChange={(e) => set('method', e.target.value)}>
+          {['GET', 'POST', 'HEAD', 'PUT'].map((m) => <option key={m} value={m}>{m}</option>)}
+        </select>
+        <input type="number" className={field} placeholder="Expected status" value={form.expected_status} onChange={(e) => set('expected_status', e.target.value)} />
+        <input type="number" className={field} placeholder="Interval (s)" value={form.interval_seconds} onChange={(e) => set('interval_seconds', e.target.value)} />
+        <input type="number" className={field} placeholder="Timeout (ms)" value={form.timeout_ms} onChange={(e) => set('timeout_ms', e.target.value)} />
+      </div>
+      <div>
+        <p className="text-[11px] text-gray-500 mb-1">Regions</p>
+        <div className="flex flex-wrap gap-2">
+          {ALL_REGIONS.map((r) => (
+            <button key={r} onClick={() => toggleRegion(r)}
+              className={`px-2.5 py-1 rounded-md text-[11px] border transition-colors ${form.regions.includes(r) ? 'bg-sky-500/20 text-sky-300 border-sky-500/40' : 'bg-gray-800 text-gray-400 border-gray-700'}`}>
+              {r}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="flex items-center gap-2 justify-end">
+        <button onClick={onClose} className="px-3 py-2 text-xs text-gray-400 hover:text-gray-200">Cancel</button>
+        <button onClick={submit} disabled={saving || !form.name || !form.target_url}
+          className="px-3 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs disabled:opacity-50">
+          {saving ? 'Creating…' : 'Create check'}
+        </button>
+      </div>
+    </div>
+  )
 }
 
 function UptimeTimeline({ results }) {
@@ -37,6 +101,8 @@ export default function SyntheticMonitoring() {
   const checks = useStore((s) => s.syntheticChecks)
   const fetchChecks = useStore((s) => s.fetchSyntheticChecks)
   const runCheck = useStore((s) => s.runSyntheticCheck)
+  const createCheck = useStore((s) => s.createSyntheticCheck)
+  const [showForm, setShowForm] = useState(false)
   const [analytics, setAnalytics] = useState({})
   const [loading, setLoading] = useState(false)
   const [running, setRunning] = useState(null)
@@ -100,11 +166,19 @@ export default function SyntheticMonitoring() {
         <h2 className="text-xl font-semibold text-white flex items-center gap-2">
           <Radar className="w-5 h-5 text-sky-400" /> Synthetic Monitoring
         </h2>
-        <button onClick={refresh}
-          className="flex items-center gap-1.5 px-3 py-2 bg-gray-800 text-gray-300 rounded-lg text-xs hover:bg-gray-700">
-          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} /> Refresh
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={() => setShowForm((v) => !v)}
+            className="flex items-center gap-1.5 px-3 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs">
+            <Plus className="w-3.5 h-3.5" /> New check
+          </button>
+          <button onClick={refresh}
+            className="flex items-center gap-1.5 px-3 py-2 bg-gray-800 text-gray-300 rounded-lg text-xs hover:bg-gray-700">
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} /> Refresh
+          </button>
+        </div>
       </div>
+
+      {showForm && <CreateCheckForm onCreate={createCheck} onClose={() => setShowForm(false)} />}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {checks.map((c) => {
