@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.config import CORS_ORIGINS
 from backend.database import init_db
-from backend.routers import ingest, metrics, logs, services as services_router, stream, alerts, incidents, thresholds, anomalies, dashboard, correlations, traces, ai_chat, chaos, slo, deploys, predictions, alert_rules, oncall, dashboard_builder, status_page, postmortem, heatmap, notifications, health_scores, audit, sla_report, impact, fingerprints, cost
+from backend.routers import ingest, metrics, logs, services as services_router, stream, alerts, incidents, thresholds, anomalies, dashboard, correlations, traces, ai_chat, chaos, slo, deploys, predictions, alert_rules, oncall, dashboard_builder, status_page, postmortem, heatmap, notifications, health_scores, audit, sla_report, impact, fingerprints, cost, synthetic
 from backend.services.monitor import start_monitor, stop_monitor
 from backend.services.probe_monitor import start_probe_monitor, stop_probe_monitor
 
@@ -69,3 +69,4 @@ app.include_router(sla_report.router, prefix="/api/sla-report", tags=["SLA Repor
 app.include_router(impact.router, prefix="/api/impact", tags=["Impact Analysis"])
 app.include_router(fingerprints.router, prefix="/api/fingerprints", tags=["Anomaly Fingerprints"])
 app.include_router(cost.router, prefix="/api/cost", tags=["Cost Optimization"])
+app.include_router(synthetic.router, prefix="/api/synthetic", tags=["Synthetic Monitoring"])
