@@ -1,6 +1,7 @@
 import sqlite3
 import threading
 from contextlib import contextmanager
+from datetime import datetime
 from backend.config import DATABASE_PATH
 
 _local = threading.local()
@@ -230,8 +231,57 @@ def init_db():
                 created_at TEXT NOT NULL
             );
             CREATE INDEX IF NOT EXISTS idx_fingerprint_sig ON anomaly_fingerprints(pattern_signature);
+
+            CREATE TABLE IF NOT EXISTS synthetic_checks (
+                id TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                service TEXT NOT NULL,
+                target_url TEXT NOT NULL,
+                method TEXT DEFAULT 'GET',
+                interval_seconds INTEGER DEFAULT 60,
+                timeout_ms INTEGER DEFAULT 3000,
+                expected_status INTEGER DEFAULT 200,
+                regions TEXT NOT NULL DEFAULT '[]',
+                enabled INTEGER DEFAULT 1,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS probe_results (
+                id TEXT PRIMARY KEY,
+                check_id TEXT NOT NULL,
+                region TEXT NOT NULL,
+                success INTEGER NOT NULL,
+                status_code INTEGER,
+                latency_ms REAL,
+                error TEXT,
+                checked_at TEXT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_probe_check_time ON probe_results(check_id, checked_at);
+            CREATE INDEX IF NOT EXISTS idx_probe_region ON probe_results(check_id, region, checked_at);
         """)
         _seed_default_thresholds(conn)
+        _seed_default_checks(conn)
+
+
+def _seed_default_checks(conn: sqlite3.Connection):
+    existing = conn.execute("SELECT COUNT(*) FROM synthetic_checks").fetchone()[0]
+    if existing > 0:
+        return
+    regions = '["us-east", "us-west", "eu-west"]'
+    now = datetime.utcnow().isoformat()
+    defaults = [
+        ("check-api-gateway", "API Gateway Health", "api-gateway", "https://api.internal/healthz", regions),
+        ("check-auth-service", "Auth Login Endpoint", "auth-service", "https://auth.internal/login", regions),
+        ("check-payment-service", "Payment Charge API", "payment-service", "https://pay.internal/v1/charge", regions),
+        ("check-user-service", "User Profile API", "user-service", "https://users.internal/profile", regions),
+    ]
+    conn.executemany(
+        """INSERT INTO synthetic_checks
+           (id, name, service, target_url, regions, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?)""",
+        [(i, n, s, u, r, now, now) for (i, n, s, u, r) in defaults],
+    )
 
 
 def _seed_default_thresholds(conn: sqlite3.Connection):
