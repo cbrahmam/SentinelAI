@@ -188,3 +188,40 @@ class IncidentStatusUpdate(BaseModel):
 
 class IncidentResolve(BaseModel):
     resolution: str
+
+
+class SyntheticCheck(BaseModel):
+    id: str
+    name: str
+    service: str
+    target_url: str
+    method: str = "GET"
+    interval_seconds: int = 60
+    timeout_ms: int = 3000
+    expected_status: int = 200
+    regions: list[str] = []
+    enabled: bool = True
+    created_at: str
+    updated_at: str
+
+
+class SyntheticCheckCreate(BaseModel):
+    name: str
+    service: str
+    target_url: str = Field(..., description="URL the probe issues requests against")
+    method: str = "GET"
+    interval_seconds: int = Field(60, ge=10, le=3600)
+    timeout_ms: int = Field(3000, ge=100, le=30000)
+    expected_status: int = 200
+    regions: list[str] = ["us-east", "us-west", "eu-west"]
+
+
+class ProbeResult(BaseModel):
+    id: str
+    check_id: str
+    region: str
+    success: bool
+    status_code: Optional[int] = None
+    latency_ms: Optional[float] = None
+    error: Optional[str] = None
+    checked_at: str
