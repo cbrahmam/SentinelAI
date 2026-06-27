@@ -4,6 +4,7 @@ from backend.config import CORS_ORIGINS
 from backend.database import init_db
 from backend.routers import ingest, metrics, logs, services as services_router, stream, alerts, incidents, thresholds, anomalies, dashboard, correlations, traces, ai_chat, chaos, slo, deploys, predictions, alert_rules, oncall, dashboard_builder, status_page, postmortem, heatmap, notifications, health_scores, audit, sla_report, impact, fingerprints, cost
 from backend.services.monitor import start_monitor, stop_monitor
+from backend.services.probe_monitor import start_probe_monitor, stop_probe_monitor
 
 app = FastAPI(
     title="SentinelAI",
@@ -24,11 +25,13 @@ app.add_middleware(
 async def startup():
     init_db()
     await start_monitor()
+    await start_probe_monitor()
 
 
 @app.on_event("shutdown")
 async def shutdown():
     await stop_monitor()
+    await stop_probe_monitor()
 
 
 @app.get("/api/health")
