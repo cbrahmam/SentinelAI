@@ -1,6 +1,7 @@
 import random
 from datetime import datetime, timezone
 from backend.database import get_db
+from backend.services.probe_store import record_result
 
 # Baseline added latency per region (ms) to simulate geographic distance.
 REGION_LATENCY = {
@@ -69,3 +70,19 @@ def probe_once(check: dict, region: str) -> dict:
         "status_code": check["expected_status"], "latency_ms": latency,
         "error": None, "checked_at": checked_at,
     }
+
+
+def probe_check(check: dict, persist: bool = True) -> list[dict]:
+    """Probe a check from every configured region.
+
+    Returns the list of per-region results. When ``persist`` is set each
+    result is also written to the probe_results history table.
+    """
+    regions = check.get("regions") or ["us-east"]
+    results = []
+    for region in regions:
+        result = probe_once(check, region)
+        if persist:
+            record_result(result)
+        results.append(result)
+    return results
