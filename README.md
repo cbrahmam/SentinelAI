@@ -46,6 +46,7 @@ SentinelAI continuously monitors metrics and logs across your entire infrastruct
 - **Dependency impact analyzer** — "What if X goes down?" blast radius simulator with propagation chains
 - **Anomaly fingerprinting** — Clusters recurring anomaly patterns with confidence scores and pattern library
 - **Cost & resource optimizer** — Utilization-based right-sizing recommendations with savings projections
+- **Synthetic uptime monitoring** — Multi-region HTTP probes per service with uptime %, latency percentiles, up/down timeline, and consecutive-failure alerting
 - **Real-time streaming** — Server-Sent Events for live metrics, logs, and alerts with auto-reconnect
 - **Built-in simulator** — 8 microservices with realistic metrics, logs, and anomaly injection
 
@@ -255,6 +256,12 @@ api-gateway ──▶ auth-service ──▶ postgres-primary
 | `/api/fingerprints/patterns` | GET | Known pattern library |
 | `/api/fingerprints/match/{id}` | GET | Match a single alert to known patterns |
 | `/api/cost` | GET | Cost analysis with right-sizing recommendations |
+| `/api/synthetic` | GET/POST | List or create synthetic uptime checks |
+| `/api/synthetic/{id}` | GET | Synthetic check detail |
+| `/api/synthetic/{id}/toggle` | PUT | Enable/disable a synthetic check |
+| `/api/synthetic/{id}/run` | POST | Run a probe across all regions now |
+| `/api/synthetic/{id}/results` | GET | Probe result history (filter by region) |
+| `/api/synthetic/{id}/analytics` | GET | Uptime %, latency percentiles, per-region breakdown |
 
 ## Project Structure
 
@@ -297,7 +304,11 @@ SentinelAI/
 │   │   ├── sla_reporter.py        # SLA compliance reporting
 │   │   ├── impact_analyzer.py     # Dependency impact analysis
 │   │   ├── fingerprint_engine.py  # Anomaly pattern matching
-│   │   └── cost_optimizer.py      # Resource right-sizing
+│   │   ├── cost_optimizer.py      # Resource right-sizing
+│   │   ├── probe_store.py         # Synthetic check & probe result persistence
+│   │   ├── probe_engine.py        # Multi-region probe simulation & alerting
+│   │   ├── probe_analytics.py     # Uptime % & latency percentile aggregation
+│   │   └── probe_monitor.py       # Background probe sweep loop
 │   ├── generators/
 │   │   └── simulator.py           # 8-service data simulator
 │   └── routers/                   # FastAPI route handlers
@@ -336,7 +347,8 @@ SentinelAI/
 │   │       ├── SLAReport.jsx      # SLA compliance reports
 │   │       ├── ImpactAnalyzer.jsx # Dependency impact simulator
 │   │       ├── AnomalyFingerprints.jsx # Pattern matching
-│   │       └── CostOptimizer.jsx  # Cost & resource optimizer
+│   │       ├── CostOptimizer.jsx  # Cost & resource optimizer
+│   │       └── SyntheticMonitoring.jsx # Synthetic uptime probes & analytics
 │   └── vite.config.js             # Vite + proxy config
 ├── .env.example
 └── README.md
