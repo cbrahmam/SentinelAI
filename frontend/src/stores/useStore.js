@@ -183,6 +183,38 @@ const useStore = create((set, get) => ({
       console.error('Correlations fetch error:', e)
     }
   },
+
+  syntheticChecks: [],
+
+  fetchSyntheticChecks: async () => {
+    try {
+      const res = await fetch(`${API}/synthetic`)
+      const data = await res.json()
+      set({ syntheticChecks: data.checks || [] })
+    } catch (e) {
+      console.error('Synthetic checks fetch error:', e)
+    }
+  },
+
+  createSyntheticCheck: async (payload) => {
+    const res = await fetch(`${API}/synthetic`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    await get().fetchSyntheticChecks()
+    return res.json()
+  },
+
+  runSyntheticCheck: async (checkId) => {
+    const res = await fetch(`${API}/synthetic/${checkId}/run`, { method: 'POST' })
+    return res.json()
+  },
+
+  toggleSyntheticCheck: async (checkId, enabled) => {
+    await fetch(`${API}/synthetic/${checkId}/toggle?enabled=${enabled}`, { method: 'PUT' })
+    await get().fetchSyntheticChecks()
+  },
 }))
 
 export default useStore
