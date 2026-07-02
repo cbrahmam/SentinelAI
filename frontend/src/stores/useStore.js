@@ -215,6 +215,55 @@ const useStore = create((set, get) => ({
     await fetch(`${API}/synthetic/${checkId}/toggle?enabled=${enabled}`, { method: 'PUT' })
     await get().fetchSyntheticChecks()
   },
+
+  catalogEntries: [],
+  catalogFacets: { teams: [], tiers: [], lifecycles: [] },
+  catalogStats: null,
+
+  fetchCatalog: async (filters = {}) => {
+    try {
+      const params = new URLSearchParams(
+        Object.entries(filters).filter(([, v]) => v)
+      ).toString()
+      const res = await fetch(`${API}/catalog${params ? `?${params}` : ''}`)
+      const data = await res.json()
+      set({ catalogEntries: data.entries || [] })
+    } catch (e) {
+      console.error('Catalog fetch error:', e)
+    }
+  },
+
+  fetchCatalogFacets: async () => {
+    try {
+      const res = await fetch(`${API}/catalog/facets`)
+      set({ catalogFacets: await res.json() })
+    } catch (e) {
+      console.error('Catalog facets error:', e)
+    }
+  },
+
+  fetchCatalogStats: async () => {
+    try {
+      const res = await fetch(`${API}/catalog/stats`)
+      set({ catalogStats: await res.json() })
+    } catch (e) {
+      console.error('Catalog stats error:', e)
+    }
+  },
+
+  saveCatalogEntry: async (payload) => {
+    await fetch(`${API}/catalog`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    await Promise.all([get().fetchCatalog(), get().fetchCatalogFacets(), get().fetchCatalogStats()])
+  },
+
+  deleteCatalogEntry: async (service) => {
+    await fetch(`${API}/catalog/${service}`, { method: 'DELETE' })
+    await Promise.all([get().fetchCatalog(), get().fetchCatalogStats()])
+  },
 }))
 
 export default useStore
