@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Boxes, RefreshCw, User, Users, AlertCircle, GitBranch, Search, X, Book, Code2, LayoutDashboard, Phone, ExternalLink, Plus } from 'lucide-react'
+import { Boxes, RefreshCw, User, Users, AlertCircle, GitBranch, Search, X, Book, Code2, LayoutDashboard, Phone, ExternalLink, Plus, Pencil, Trash2 } from 'lucide-react'
 import useStore from '../stores/useStore'
 
 const TIER_STYLES = {
@@ -86,7 +86,7 @@ function LinkRow({ icon: Icon, label, url }) {
   )
 }
 
-function DetailDrawer({ entry, onClose }) {
+function DetailDrawer({ entry, onClose, onEdit, onDelete }) {
   if (!entry) return null
   const tier = TIER_STYLES[entry.tier] || TIER_STYLES['tier-3']
   return (
@@ -99,7 +99,13 @@ function DetailDrawer({ entry, onClose }) {
             <h3 className="text-lg font-semibold text-white">{entry.display_name || entry.service}</h3>
             <p className="text-xs text-gray-500 font-mono">{entry.service}</p>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-white"><X className="w-5 h-5" /></button>
+          <div className="flex items-center gap-1">
+            <button onClick={() => onEdit(entry)} title="Edit"
+              className="p-1.5 text-gray-400 hover:text-violet-300 hover:bg-gray-800 rounded"><Pencil className="w-4 h-4" /></button>
+            <button onClick={() => onDelete(entry)} title="Remove from catalog"
+              className="p-1.5 text-gray-400 hover:text-red-400 hover:bg-gray-800 rounded"><Trash2 className="w-4 h-4" /></button>
+            <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-white"><X className="w-5 h-5" /></button>
+          </div>
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -161,6 +167,7 @@ export default function ServiceCatalog() {
   const fetchFacets = useStore((s) => s.fetchCatalogFacets)
   const fetchStats = useStore((s) => s.fetchCatalogStats)
   const saveEntry = useStore((s) => s.saveCatalogEntry)
+  const deleteEntry = useStore((s) => s.deleteCatalogEntry)
   const [filters, setFilters] = useState({ team: '', tier: '', lifecycle: '', q: '' })
   const [selected, setSelected] = useState(null)
   const [editing, setEditing] = useState(null) // null=closed, {}=new, {entry}=edit
@@ -185,6 +192,13 @@ export default function ServiceCatalog() {
   useEffect(() => { refresh() }, [])
 
   const select = 'bg-gray-800 text-gray-300 text-xs rounded-lg px-3 py-2 border border-gray-700'
+
+  const handleEdit = (entry) => { setSelected(null); setEditing(entry) }
+  const handleDelete = async (entry) => {
+    if (!window.confirm(`Remove ${entry.service} from the catalog?`)) return
+    await deleteEntry(entry.service)
+    setSelected(null)
+  }
 
   return (
     <div className="space-y-4">
@@ -271,7 +285,7 @@ export default function ServiceCatalog() {
         })}
       </div>
 
-      <DetailDrawer entry={selected} onClose={() => setSelected(null)} />
+      <DetailDrawer entry={selected} onClose={() => setSelected(null)} onEdit={handleEdit} onDelete={handleDelete} />
       {editing && <EditForm initial={editing} onSave={saveEntry} onClose={() => setEditing(null)} />}
     </div>
   )
