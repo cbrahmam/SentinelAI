@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Query
 from backend.models.schemas import CatalogUpsert
 from backend.services.catalog_store import search_entries, facet_values, upsert_entry, delete_entry
-from backend.services.catalog_service import enrich, enriched_entry
+from backend.services.catalog_service import enrich, enriched_entry, coverage_stats
 
 router = APIRouter()
 
@@ -16,6 +16,11 @@ async def list_catalog(team: str | None = None, tier: str | None = None,
 @router.get("/facets")
 async def get_facets():
     return facet_values()
+
+
+@router.get("/stats")
+async def get_stats():
+    return coverage_stats()
 
 
 @router.get("/{service}")

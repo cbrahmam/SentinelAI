@@ -46,3 +46,35 @@ def uncataloged_services() -> list[str]:
     """Live services that have no catalog entry yet — ownership gaps."""
     cataloged = {e["service"] for e in list_entries()}
     return sorted(s for s in get_services() if s not in cataloged)
+
+
+def _count_by(entries: list[dict], key: str) -> dict:
+    counts: dict[str, int] = {}
+    for e in entries:
+        counts[e.get(key) or "unassigned"] = counts.get(e.get(key) or "unassigned", 0) + 1
+    return dict(sorted(counts.items()))
+
+
+def coverage_stats() -> dict:
+    """Ownership coverage and distribution across the catalog."""
+    entries = list_entries()
+    total = len(entries)
+    with_owner = [e for e in entries if e.get("owner")]
+    with_oncall = [e for e in entries if e.get("on_call")]
+    tier1_no_owner = [e["service"] for e in entries if e.get("tier") == "tier-1" and not e.get("owner")]
+    uncataloged = uncataloged_services()
+
+    def pct(n):
+        return round(n / total * 100, 1) if total else 0.0
+
+    return {
+        "total_cataloged": total,
+        "uncataloged": uncataloged,
+        "uncataloged_count": len(uncataloged),
+        "owner_coverage_pct": pct(len(with_owner)),
+        "oncall_coverage_pct": pct(len(with_oncall)),
+        "tier1_missing_owner": tier1_no_owner,
+        "by_tier": _count_by(entries, "tier"),
+        "by_team": _count_by(entries, "team"),
+        "by_lifecycle": _count_by(entries, "lifecycle"),
+    }
