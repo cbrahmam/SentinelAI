@@ -163,6 +163,7 @@ function DetailDrawer({ entry, onClose, onEdit, onDelete }) {
 export default function ServiceCatalog() {
   const entries = useStore((s) => s.catalogEntries)
   const facets = useStore((s) => s.catalogFacets)
+  const stats = useStore((s) => s.catalogStats)
   const fetchCatalog = useStore((s) => s.fetchCatalog)
   const fetchFacets = useStore((s) => s.fetchCatalogFacets)
   const fetchStats = useStore((s) => s.fetchCatalogStats)
@@ -217,6 +218,28 @@ export default function ServiceCatalog() {
           </button>
         </div>
       </div>
+
+      {stats && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="bg-[#111827] border border-gray-700/50 rounded-lg p-3">
+            <p className="text-[11px] text-gray-500">Cataloged</p>
+            <p className="text-xl font-bold text-white">{stats.total_cataloged}</p>
+          </div>
+          <div className="bg-[#111827] border border-gray-700/50 rounded-lg p-3">
+            <p className="text-[11px] text-gray-500">Owner coverage</p>
+            <p className={`text-xl font-bold ${stats.owner_coverage_pct >= 90 ? 'text-emerald-400' : 'text-amber-400'}`}>{stats.owner_coverage_pct}%</p>
+          </div>
+          <div className="bg-[#111827] border border-gray-700/50 rounded-lg p-3">
+            <p className="text-[11px] text-gray-500">On-call coverage</p>
+            <p className={`text-xl font-bold ${stats.oncall_coverage_pct >= 90 ? 'text-emerald-400' : 'text-amber-400'}`}>{stats.oncall_coverage_pct}%</p>
+          </div>
+          <div className={`bg-[#111827] border rounded-lg p-3 ${stats.uncataloged_count || stats.tier1_missing_owner.length ? 'border-red-500/30' : 'border-gray-700/50'}`}>
+            <p className="text-[11px] text-gray-500">Gaps</p>
+            <p className="text-xl font-bold text-white">{stats.uncataloged_count + stats.tier1_missing_owner.length}</p>
+            <p className="text-[10px] text-gray-500">{stats.uncataloged_count} uncataloged · {stats.tier1_missing_owner.length} tier-1 unowned</p>
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative">
