@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Boxes, RefreshCw, User, Users, AlertCircle, GitBranch, Search, X, Book, Code2, LayoutDashboard, Phone, ExternalLink } from 'lucide-react'
+import { Boxes, RefreshCw, User, Users, AlertCircle, GitBranch, Search, X, Book, Code2, LayoutDashboard, Phone, ExternalLink, Plus } from 'lucide-react'
 import useStore from '../stores/useStore'
 
 const TIER_STYLES = {
@@ -10,6 +10,70 @@ const TIER_STYLES = {
 
 const STATUS_DOT = {
   healthy: 'bg-emerald-500', warning: 'bg-amber-500', critical: 'bg-red-500', unknown: 'bg-gray-500',
+}
+
+const TIERS = ['tier-1', 'tier-2', 'tier-3']
+const LIFECYCLES = ['production', 'beta', 'experimental', 'deprecated']
+
+function EditForm({ initial, onSave, onClose }) {
+  const editing = Boolean(initial?.service)
+  const [form, setForm] = useState({
+    service: initial?.service || '', display_name: initial?.display_name || '',
+    description: initial?.description || '', team: initial?.team || '', owner: initial?.owner || '',
+    tier: initial?.tier || 'tier-3', lifecycle: initial?.lifecycle || 'production',
+    on_call: initial?.on_call || '', repo_url: initial?.repo_url || '', docs_url: initial?.docs_url || '',
+    dashboard_url: initial?.dashboard_url || '', tags: (initial?.tags || []).join(', '),
+  })
+  const [saving, setSaving] = useState(false)
+  const set = (k, v) => setForm((f) => ({ ...f, [k]: v }))
+
+  const submit = async () => {
+    if (!form.service) return
+    setSaving(true)
+    await onSave({
+      ...form,
+      tags: form.tags.split(',').map((t) => t.trim()).filter(Boolean),
+    })
+    setSaving(false)
+    onClose()
+  }
+
+  const field = 'bg-gray-800 text-gray-200 text-xs rounded-lg px-3 py-2 border border-gray-700 w-full'
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/60" />
+      <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto bg-[#111827] border border-violet-500/30 rounded-lg p-5 space-y-3"
+        onClick={(e) => e.stopPropagation()}>
+        <h3 className="text-sm font-semibold text-white">{editing ? `Edit ${form.service}` : 'Add service to catalog'}</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <input className={field} placeholder="service id (e.g. api-gateway)" value={form.service}
+            disabled={editing} onChange={(e) => set('service', e.target.value)} />
+          <input className={field} placeholder="Display name" value={form.display_name} onChange={(e) => set('display_name', e.target.value)} />
+          <input className={`${field} md:col-span-2`} placeholder="Description" value={form.description} onChange={(e) => set('description', e.target.value)} />
+          <input className={field} placeholder="Team" value={form.team} onChange={(e) => set('team', e.target.value)} />
+          <input className={field} placeholder="Owner (email)" value={form.owner} onChange={(e) => set('owner', e.target.value)} />
+          <select className={field} value={form.tier} onChange={(e) => set('tier', e.target.value)}>
+            {TIERS.map((t) => <option key={t} value={t}>{t}</option>)}
+          </select>
+          <select className={field} value={form.lifecycle} onChange={(e) => set('lifecycle', e.target.value)}>
+            {LIFECYCLES.map((t) => <option key={t} value={t}>{t}</option>)}
+          </select>
+          <input className={field} placeholder="On-call rotation" value={form.on_call} onChange={(e) => set('on_call', e.target.value)} />
+          <input className={field} placeholder="Tags (comma-separated)" value={form.tags} onChange={(e) => set('tags', e.target.value)} />
+          <input className={field} placeholder="Repo URL" value={form.repo_url} onChange={(e) => set('repo_url', e.target.value)} />
+          <input className={field} placeholder="Docs URL" value={form.docs_url} onChange={(e) => set('docs_url', e.target.value)} />
+          <input className={`${field} md:col-span-2`} placeholder="Dashboard URL" value={form.dashboard_url} onChange={(e) => set('dashboard_url', e.target.value)} />
+        </div>
+        <div className="flex items-center justify-end gap-2">
+          <button onClick={onClose} className="px-3 py-2 text-xs text-gray-400 hover:text-gray-200">Cancel</button>
+          <button onClick={submit} disabled={saving || !form.service}
+            className="px-3 py-2 bg-violet-600 hover:bg-violet-500 text-white rounded-lg text-xs disabled:opacity-50">
+            {saving ? 'Saving…' : editing ? 'Save changes' : 'Add service'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 function LinkRow({ icon: Icon, label, url }) {
@@ -96,8 +160,10 @@ export default function ServiceCatalog() {
   const fetchCatalog = useStore((s) => s.fetchCatalog)
   const fetchFacets = useStore((s) => s.fetchCatalogFacets)
   const fetchStats = useStore((s) => s.fetchCatalogStats)
+  const saveEntry = useStore((s) => s.saveCatalogEntry)
   const [filters, setFilters] = useState({ team: '', tier: '', lifecycle: '', q: '' })
   const [selected, setSelected] = useState(null)
+  const [editing, setEditing] = useState(null) // null=closed, {}=new, {entry}=edit
 
   const setFilter = (k, v) => {
     const next = { ...filters, [k]: v }
@@ -126,10 +192,16 @@ export default function ServiceCatalog() {
         <h2 className="text-xl font-semibold text-white flex items-center gap-2">
           <Boxes className="w-5 h-5 text-violet-400" /> Service Catalog
         </h2>
-        <button onClick={refresh}
-          className="flex items-center gap-1.5 px-3 py-2 bg-gray-800 text-gray-300 rounded-lg text-xs hover:bg-gray-700">
-          <RefreshCw className="w-3.5 h-3.5" /> Refresh
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={() => setEditing({})}
+            className="flex items-center gap-1.5 px-3 py-2 bg-violet-600 hover:bg-violet-500 text-white rounded-lg text-xs">
+            <Plus className="w-3.5 h-3.5" /> Add service
+          </button>
+          <button onClick={refresh}
+            className="flex items-center gap-1.5 px-3 py-2 bg-gray-800 text-gray-300 rounded-lg text-xs hover:bg-gray-700">
+            <RefreshCw className="w-3.5 h-3.5" /> Refresh
+          </button>
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
@@ -200,6 +272,7 @@ export default function ServiceCatalog() {
       </div>
 
       <DetailDrawer entry={selected} onClose={() => setSelected(null)} />
+      {editing && <EditForm initial={editing} onSave={saveEntry} onClose={() => setEditing(null)} />}
     </div>
   )
 }
