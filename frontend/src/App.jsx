@@ -33,6 +33,7 @@ import ImpactAnalyzer from './components/ImpactAnalyzer'
 import AnomalyFingerprints from './components/AnomalyFingerprints'
 import CostOptimizer from './components/CostOptimizer'
 import SyntheticMonitoring from './components/SyntheticMonitoring'
+import ServiceCatalog from './components/ServiceCatalog'
 import AIChatPanel from './components/AIChatPanel'
 import ToastContainer, { toast } from './components/ToastContainer'
 
@@ -148,6 +149,7 @@ function AppContent() {
         <Route path="/fingerprints" element={<Page><AnomalyFingerprints /></Page>} />
         <Route path="/cost" element={<Page><CostOptimizer /></Page>} />
         <Route path="/synthetic" element={<Page><SyntheticMonitoring /></Page>} />
+        <Route path="/catalog" element={<Page><ServiceCatalog /></Page>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <AIChatPanel />
