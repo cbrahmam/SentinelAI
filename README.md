@@ -47,6 +47,7 @@ SentinelAI continuously monitors metrics and logs across your entire infrastruct
 - **Anomaly fingerprinting** — Clusters recurring anomaly patterns with confidence scores and pattern library
 - **Cost & resource optimizer** — Utilization-based right-sizing recommendations with savings projections
 - **Synthetic uptime monitoring** — Multi-region HTTP probes per service with uptime %, latency percentiles, up/down timeline, and consecutive-failure alerting
+- **Service catalog & ownership** — Per-service owners, teams, tiers, lifecycle, on-call, and repo/docs/dashboard links; searchable/filterable, with ownership-coverage stats and gap tracking, surfaced in service detail
 - **Real-time streaming** — Server-Sent Events for live metrics, logs, and alerts with auto-reconnect
 - **Built-in simulator** — 8 microservices with realistic metrics, logs, and anomaly injection
 
@@ -262,6 +263,10 @@ api-gateway ──▶ auth-service ──▶ postgres-primary
 | `/api/synthetic/{id}/run` | POST | Run a probe across all regions now |
 | `/api/synthetic/{id}/results` | GET | Probe result history (filter by region) |
 | `/api/synthetic/{id}/analytics` | GET | Uptime %, latency percentiles, per-region breakdown |
+| `/api/catalog` | GET/POST | List (filter by team/tier/lifecycle/q) or upsert a catalog entry |
+| `/api/catalog/facets` | GET | Distinct teams, tiers, lifecycles for filters |
+| `/api/catalog/stats` | GET | Ownership coverage and gap statistics |
+| `/api/catalog/{service}` | GET/PUT/DELETE | Get, update, or remove a service's catalog entry |
 
 ## Project Structure
 
@@ -308,7 +313,9 @@ SentinelAI/
 │   │   ├── probe_store.py         # Synthetic check & probe result persistence
 │   │   ├── probe_engine.py        # Multi-region probe simulation & alerting
 │   │   ├── probe_analytics.py     # Uptime % & latency percentile aggregation
-│   │   └── probe_monitor.py       # Background probe sweep loop
+│   │   ├── probe_monitor.py       # Background probe sweep loop
+│   │   ├── catalog_store.py       # Service catalog persistence & search
+│   │   └── catalog_service.py     # Catalog enrichment & ownership stats
 │   ├── generators/
 │   │   └── simulator.py           # 8-service data simulator
 │   └── routers/                   # FastAPI route handlers
@@ -348,7 +355,8 @@ SentinelAI/
 │   │       ├── ImpactAnalyzer.jsx # Dependency impact simulator
 │   │       ├── AnomalyFingerprints.jsx # Pattern matching
 │   │       ├── CostOptimizer.jsx  # Cost & resource optimizer
-│   │       └── SyntheticMonitoring.jsx # Synthetic uptime probes & analytics
+│   │       ├── SyntheticMonitoring.jsx # Synthetic uptime probes & analytics
+│   │       └── ServiceCatalog.jsx # Service ownership catalog & coverage
 │   └── vite.config.js             # Vite + proxy config
 ├── .env.example
 └── README.md
