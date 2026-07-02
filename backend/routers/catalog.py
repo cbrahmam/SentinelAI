@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, Query
-from backend.services.catalog_store import search_entries, facet_values
+from backend.models.schemas import CatalogUpsert
+from backend.services.catalog_store import search_entries, facet_values, upsert_entry, delete_entry
 from backend.services.catalog_service import enrich, enriched_entry
 
 router = APIRouter()
@@ -23,3 +24,23 @@ async def get_catalog_entry(service: str):
     if not entry:
         raise HTTPException(status_code=404, detail="service not in catalog")
     return entry
+
+
+@router.post("")
+async def create_or_update(payload: CatalogUpsert):
+    entry = upsert_entry(payload)
+    return enrich(entry)
+
+
+@router.put("/{service}")
+async def update_entry(service: str, payload: CatalogUpsert):
+    payload.service = service
+    entry = upsert_entry(payload)
+    return enrich(entry)
+
+
+@router.delete("/{service}")
+async def remove_entry(service: str):
+    if not delete_entry(service):
+        raise HTTPException(status_code=404, detail="service not in catalog")
+    return {"deleted": service}
