@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import {
-  ArrowLeft, Cpu, HardDrive, AlertTriangle, Clock, Activity, Wifi,
+  ArrowLeft, Cpu, HardDrive, AlertTriangle, Clock, Activity, Wifi, User, Users, Phone,
 } from 'lucide-react'
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine,
@@ -93,8 +93,17 @@ function ServiceChart({ service, metricName, color, threshold, unit }) {
 export default function ServiceDetail() {
   const { name } = useParams()
   const [detail, setDetail] = useState(null)
+  const [catalog, setCatalog] = useState(null)
   const [logs, setLogs] = useState([])
   const [activeTab, setActiveTab] = useState('metrics')
+
+  useEffect(() => {
+    setCatalog(null)
+    fetch(`/api/catalog/${name}`)
+      .then(r => (r.ok ? r.json() : null))
+      .then(setCatalog)
+      .catch(() => {})
+  }, [name])
 
   useEffect(() => {
     const load = async () => {
@@ -142,6 +151,18 @@ export default function ServiceDetail() {
           <span>Depends on: {detail.dependencies?.depends_on?.join(', ') || 'none'}</span>
           <span>Depended by: {detail.dependencies?.depended_by?.join(', ') || 'none'}</span>
         </div>
+        {catalog && (
+          <div className="flex flex-wrap items-center gap-4 mt-3 pt-3 border-t border-gray-800 text-xs">
+            <span className={`px-2 py-0.5 rounded font-medium ${
+              catalog.tier === 'tier-1' ? 'bg-red-500/15 text-red-400' :
+              catalog.tier === 'tier-2' ? 'bg-amber-500/15 text-amber-400' : 'bg-sky-500/15 text-sky-400'
+            }`}>{catalog.tier}</span>
+            <span className="flex items-center gap-1.5 text-gray-300"><Users className="w-3.5 h-3.5 text-gray-500" /> {catalog.team || '—'}</span>
+            <span className="flex items-center gap-1.5 text-gray-300"><User className="w-3.5 h-3.5 text-gray-500" /> {catalog.owner || 'unowned'}</span>
+            <span className="flex items-center gap-1.5 text-gray-300"><Phone className="w-3.5 h-3.5 text-gray-500" /> {catalog.on_call || '—'}</span>
+            <Link to="/catalog" className="text-violet-400 hover:text-violet-300 ml-auto">View in catalog →</Link>
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
