@@ -225,3 +225,35 @@ class ProbeResult(BaseModel):
     latency_ms: Optional[float] = None
     error: Optional[str] = None
     checked_at: str
+
+
+class CatalogEntry(BaseModel):
+    service: str
+    display_name: Optional[str] = None
+    description: Optional[str] = None
+    team: Optional[str] = None
+    owner: Optional[str] = None
+    tier: str = "tier-3"
+    lifecycle: str = "production"
+    on_call: Optional[str] = None
+    repo_url: Optional[str] = None
+    docs_url: Optional[str] = None
+    dashboard_url: Optional[str] = None
+    tags: list[str] = []
+    created_at: str
+    updated_at: str
+
+
+class CatalogUpsert(BaseModel):
+    service: str
+    display_name: Optional[str] = None
+    description: Optional[str] = None
+    team: Optional[str] = None
+    owner: Optional[str] = None
+    tier: str = Field("tier-3", description="tier-1 (critical) .. tier-3 (low)")
+    lifecycle: str = "production"
+    on_call: Optional[str] = None
+    repo_url: Optional[str] = None
+    docs_url: Optional[str] = None
+    dashboard_url: Optional[str] = None
+    tags: list[str] = []
