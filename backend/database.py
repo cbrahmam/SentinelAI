@@ -259,9 +259,53 @@ def init_db():
             );
             CREATE INDEX IF NOT EXISTS idx_probe_check_time ON probe_results(check_id, checked_at);
             CREATE INDEX IF NOT EXISTS idx_probe_region ON probe_results(check_id, region, checked_at);
+
+            CREATE TABLE IF NOT EXISTS service_catalog (
+                service TEXT PRIMARY KEY,
+                display_name TEXT,
+                description TEXT,
+                team TEXT,
+                owner TEXT,
+                tier TEXT DEFAULT 'tier-3',
+                lifecycle TEXT DEFAULT 'production',
+                on_call TEXT,
+                repo_url TEXT,
+                docs_url TEXT,
+                dashboard_url TEXT,
+                tags TEXT NOT NULL DEFAULT '[]',
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_catalog_team ON service_catalog(team);
+            CREATE INDEX IF NOT EXISTS idx_catalog_tier ON service_catalog(tier);
         """)
         _seed_default_thresholds(conn)
         _seed_default_checks(conn)
+        _seed_default_catalog(conn)
+
+
+def _seed_default_catalog(conn: sqlite3.Connection):
+    existing = conn.execute("SELECT COUNT(*) FROM service_catalog").fetchone()[0]
+    if existing > 0:
+        return
+    now = datetime.utcnow().isoformat()
+    # (service, display_name, team, owner, tier, on_call)
+    defaults = [
+        ("api-gateway", "API Gateway", "Platform", "alice@corp.dev", "tier-1", "Platform Rotation"),
+        ("auth-service", "Authentication", "Identity", "bob@corp.dev", "tier-1", "Identity Rotation"),
+        ("user-service", "User Service", "Growth", "carol@corp.dev", "tier-2", "Growth Rotation"),
+        ("payment-service", "Payments", "Payments", "dave@corp.dev", "tier-1", "Payments Rotation"),
+        ("notification-service", "Notifications", "Growth", "carol@corp.dev", "tier-3", "Growth Rotation"),
+        ("postgres-primary", "Postgres Primary", "Data", "erin@corp.dev", "tier-1", "Data Rotation"),
+        ("redis-cache", "Redis Cache", "Data", "erin@corp.dev", "tier-2", "Data Rotation"),
+        ("rabbitmq", "RabbitMQ", "Platform", "alice@corp.dev", "tier-2", "Platform Rotation"),
+    ]
+    conn.executemany(
+        """INSERT INTO service_catalog
+           (service, display_name, team, owner, tier, on_call, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+        [(s, d, t, o, ti, oc, now, now) for (s, d, t, o, ti, oc) in defaults],
+    )
 
 
 def _seed_default_checks(conn: sqlite3.Connection):
