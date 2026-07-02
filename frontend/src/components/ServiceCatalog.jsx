@@ -1,5 +1,5 @@
-import { useEffect } from 'react'
-import { Boxes, RefreshCw, User, Users, AlertCircle, GitBranch } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Boxes, RefreshCw, User, Users, AlertCircle, GitBranch, Search, X } from 'lucide-react'
 import useStore from '../stores/useStore'
 
 const TIER_STYLES = {
@@ -14,17 +14,32 @@ const STATUS_DOT = {
 
 export default function ServiceCatalog() {
   const entries = useStore((s) => s.catalogEntries)
+  const facets = useStore((s) => s.catalogFacets)
   const fetchCatalog = useStore((s) => s.fetchCatalog)
   const fetchFacets = useStore((s) => s.fetchCatalogFacets)
   const fetchStats = useStore((s) => s.fetchCatalogStats)
+  const [filters, setFilters] = useState({ team: '', tier: '', lifecycle: '', q: '' })
+
+  const setFilter = (k, v) => {
+    const next = { ...filters, [k]: v }
+    setFilters(next)
+    fetchCatalog(next)
+  }
+  const clearFilters = () => {
+    setFilters({ team: '', tier: '', lifecycle: '', q: '' })
+    fetchCatalog()
+  }
+  const hasFilters = Object.values(filters).some(Boolean)
 
   const refresh = () => {
-    fetchCatalog()
+    fetchCatalog(filters)
     fetchFacets()
     fetchStats()
   }
 
   useEffect(() => { refresh() }, [])
+
+  const select = 'bg-gray-800 text-gray-300 text-xs rounded-lg px-3 py-2 border border-gray-700'
 
   return (
     <div className="space-y-4">
@@ -36,6 +51,31 @@ export default function ServiceCatalog() {
           className="flex items-center gap-1.5 px-3 py-2 bg-gray-800 text-gray-300 rounded-lg text-xs hover:bg-gray-700">
           <RefreshCw className="w-3.5 h-3.5" /> Refresh
         </button>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="relative">
+          <Search className="w-3.5 h-3.5 text-gray-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
+          <input value={filters.q} onChange={(e) => setFilter('q', e.target.value)} placeholder="Search service or owner"
+            className={`${select} pl-8 w-56`} />
+        </div>
+        <select value={filters.team} onChange={(e) => setFilter('team', e.target.value)} className={select}>
+          <option value="">All teams</option>
+          {facets.teams.map((t) => <option key={t} value={t}>{t}</option>)}
+        </select>
+        <select value={filters.tier} onChange={(e) => setFilter('tier', e.target.value)} className={select}>
+          <option value="">All tiers</option>
+          {facets.tiers.map((t) => <option key={t} value={t}>{t}</option>)}
+        </select>
+        <select value={filters.lifecycle} onChange={(e) => setFilter('lifecycle', e.target.value)} className={select}>
+          <option value="">All lifecycles</option>
+          {facets.lifecycles.map((t) => <option key={t} value={t}>{t}</option>)}
+        </select>
+        {hasFilters && (
+          <button onClick={clearFilters} className="flex items-center gap-1 px-2.5 py-2 text-xs text-gray-400 hover:text-gray-200">
+            <X className="w-3.5 h-3.5" /> Clear
+          </button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
